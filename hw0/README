@@ -1,0 +1,17 @@
+Introduction
+============
+
+This little program displays a blue sphere.
+
+Compliation
+===========
+
+Linux: type "make"
+
+Mac OS X: type "make -f Makefile.macosx"
+
+Usage
+=====
+
+Press "Q" or "Esc" to leave the program.
+
