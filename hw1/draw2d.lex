@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <list>
 #include "matrix.h"
+#include "image2d.h"
 #include "draw2d.tab.hpp"
 %}
 %option noyywrap
