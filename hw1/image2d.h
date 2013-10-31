@@ -9,6 +9,8 @@
 #ifndef _image2d_h
 #define _image2d_h
 
+#include "matrix.h"
+
 typedef Matrix<double,2,1> Vec2;
 typedef list<Vec2*> Polygon2;
 typedef list<Polygon2*> Image2;

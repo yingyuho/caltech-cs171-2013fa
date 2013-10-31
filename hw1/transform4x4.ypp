@@ -41,6 +41,7 @@ transform:
     { results = $1; }
 ;
 
+// a list of matrices
 matrices:
     {   
         $$ = new list<Matrix44*>; 
@@ -54,55 +55,56 @@ matrices:
 ;
 
 matrix:
-    // Translation
+    // translation x y z
     TRANSTOK FLOAT FLOAT FLOAT
     {
         double array[16] = {\
-	 1, 0, 0,$2, \
-	 0, 1, 0,$3, \
-	 0, 0, 1,$4, \
-	 0, 0, 0, 1 };
+         1, 0, 0,$2, \
+         0, 1, 0,$3, \
+         0, 0, 1,$4, \
+         0, 0, 0, 1 };
 
-	$$ = new Matrix44(array);
+        $$ = new Matrix44(array);
     }
     |
-    // Rotation
+    // rotation x y z angle
     ROTATTOK vector FLOAT
     {
-	double x = (*($2))[0];
-	double y = (*($2))[1];
-	double z = (*($2))[2];
-	double s = sin($3);
-	double c = cos($3);
+        double x = (*($2))[0];
+        double y = (*($2))[1];
+        double z = (*($2))[2];
+        double s = sin($3);
+        double c = cos($3);
 
-	double array[16] = {\
-	x*x*(1-c) +   c, x*y*(1-c) - z*s, x*z*(1-c) + y*s, 0, \
-	y*x*(1-c) + z*s, y*y*(1-c) +   c, y*z*(1-c) - x*s, 0, \
-	z*x*(1-c) - y*s, z*y*(1-c) + x*s, z*z*(1-c) +   c, 0, \
-	0,0,0,1};
+        double array[16] = {\
+        x*x*(1-c) +   c, x*y*(1-c) - z*s, x*z*(1-c) + y*s, 0, \
+        y*x*(1-c) + z*s, y*y*(1-c) +   c, y*z*(1-c) - x*s, 0, \
+        z*x*(1-c) - y*s, z*y*(1-c) + x*s, z*z*(1-c) +   c, 0, \
+        0,0,0,1};
 
-	$$ = new Matrix44(array);
+        $$ = new Matrix44(array);
     }
     |
-    // Scaling
+    // scaleFactor sx sy sz
     SCALETOK FLOAT FLOAT FLOAT
     {
         double array[16] = {\
-	$2, 0, 0, 0, \
-	 0,$3, 0, 0, \
-	 0, 0,$4, 0, \
-	 0, 0, 0, 1 };
+        $2, 0, 0, 0, \
+         0,$3, 0, 0, \
+         0, 0,$4, 0, \
+         0, 0, 0, 1 };
 
-	$$ = new Matrix44(array);
+        $$ = new Matrix44(array);
     }
 ;
 
+// normalize a vector
 vector:
     FLOAT FLOAT FLOAT
     {
-    	double vec[3] = {$1,$2,$3};
+            double vec[3] = {$1,$2,$3};
         $$ = new Matrix31(vec);
-	*$$ = $$->normalize();
+        *$$ = $$->normalize();
     }
 ;
 

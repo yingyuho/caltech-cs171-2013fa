@@ -1,0 +1,257 @@
+===========
+Compilation
+===========
+
+"make" gives three programs: matrixdbg, transform4x4, and draw2d.
+
+"make clean" removes the intermediate files generated during compilation.
+
+=========
+matrixdbg
+=========
+
+This program tests some example of vector and matrix algebras and 
+shows the results on stdout.
+
+Usage: ./matrixdbg
+
+============
+transform4x4
+============
+
+This program reads a description of a transformation from stdin and 
+print the corresponding transformation matrix to stdout. 
+The data files have the following format (borrowed from course website):
+
+translation tx ty tz
+rotation axisX axisY axisZ angle
+scaleFactor sx sy sz
+
+The top-down order of commands corresponding to the left-right order of matrices.
+
+Usage: ./transform4x4 < [transform data]
+
+======
+draw2d
+======
+
+This program reads 2D line commands from stdin and writes the image to 
+stdout in the PPM format.
+The data files have the following format (borrowed from course website):
+
+polyline
+  0.0 0.0
+  1.0 0.0
+  1.0 1.0
+  0.0 1.0
+  0.0 0.0
+polyline
+  3.0 -3.0
+  6.0 5.0
+  9.0 -4.0
+
+Usage: ./draw2d [xmin] [xmax] [ymin] [ymax] [xRes] [yRes] < [line data] | convert - [name.png]
+
+============
+Header files
+============
+
+matrix.h:
+basic vector/matrix algebras
+
+image2d.h:
+definition of data types that is useful for parsing 2D line commands
+
+bitmap.h:
+a canvas that we can draw pixel on it with Bresenham's algorithm and PPM output
+
+=====================================
+Test output of program "transform4x4"
+=====================================
+
+YINGYU-MBP:hw1 yingyu$ ./transform4x4 < ../hw1_data/transform1.tf 
+[[    0.877583            0     0.479426            0]
+ [           0            1            0            0]
+ [   -0.479426            0     0.877583            1]
+ [           0            0            0            1]]
+
+YINGYU-MBP:hw1 yingyu$ ./transform4x4 < ../hw1_data/transform2.tf 
+[[   -0.629987     -1.58026        3.158            3]
+ [     1.86273   -0.0346004       1.4556            2]
+ [    -0.36516      2.54982      1.97693            1]
+ [           0            0            0            1]]
+
+YINGYU-MBP:hw1 yingyu$ ./transform4x4 < ../hw1_data/transform-zaxis.tf 
+[[           1            0            0            0]
+ [           0            1            0            0]
+ [           0            0            1            0]
+ [           0            0            0            1]]
+
+YINGYU-MBP:hw1 yingyu$ ./transform4x4 < ../hw1_data/transform-error-msg.tf 
+libc++abi.dylib: terminating with uncaught exception of type ZeroNormException: norm is zero
+Abort trap: 6
+YINGYU-MBP:hw1 yingyu$ cat ../hw1_data/sample_transform 
+transform-zaxis.tf:
+[1 0 0 0]
+[0 1 0 0]
+[0 0 1 0]
+[0 0 0 1]
+
+transform-error-msg.tf:
+
+some kind of error message...
+
+transform1.tf:
+[ .877583  0  .479426  0]
+[   0      1     0     0]
+[-.479426  0  .877583  1]
+[   0      0     0     1]
+
+transform2.tf:
+[-0.629987  -1.58026    3.158    3]
+[ 1.86273   -0.0346004  1.4556   2]
+[-0.36516    2.54982    1.97693  1]
+[   0          0          0      1]
+
+============================================
+Test output of the matrix library "matrix.h"
+============================================
+
+YINGYU-MBP:hw1 yingyu$ ./matrixdbg
+Example 1 (normalization):
+The unit vector of
+[[           1]
+ [           1]
+ [          -1]
+ [          -1]]
+is
+[[         0.5]
+ [         0.5]
+ [        -0.5]
+ [        -0.5]]
+
+Example 2 (matrix+matrix):
+[[           1            2            3            4]
+ [           5            6            7            8]
+ [           9           10           11           12]
+ [          13           14           15           16]]
+plus
+[[           2            3            5            7]
+ [          11           13           17           19]
+ [          23           29           31           37]
+ [          41           43           47           53]]
+is
+[[           3            5            8           11]
+ [          16           19           24           27]
+ [          32           39           42           49]
+ [          54           57           62           69]]
+
+Example 3 (scalar*matrix):
+3 times
+[[           1            2            3            4]
+ [           5            6            7            8]
+ [           9           10           11           12]
+ [          13           14           15           16]]
+is
+[[           3            6            9           12]
+ [          15           18           21           24]
+ [          27           30           33           36]
+ [          39           42           45           48]]
+
+Example 4 (matrix*matrix):
+[[           2            0            0            0]
+ [           0           -1            0            0]
+ [           0            0            0            1]
+ [           0            0           -2            0]]
+times
+[[           4            0            0            0]
+ [           0           -3            0            0]
+ [           0            0            0           -1]
+ [           0            0           -1            0]]
+is
+[[           8            0            0            0]
+ [           0            3            0            0]
+ [           0            0           -1            0]
+ [           0            0            0            2]]
+
+Example 5 (matrix*vector):
+[[           2            0            0            0]
+ [           0           -1            0            0]
+ [           0            0            0            1]
+ [           0            0           -2            0]]
+times
+[[           3]
+ [           5]
+ [           7]
+ [           9]]
+is
+[[           6]
+ [          -5]
+ [           9]
+ [         -14]]
+
+Example 6 (vector.vector):
+[[           3]
+ [           5]
+ [           7]
+ [           9]]
+dots
+[[           1]
+ [          -1]
+ [           2]
+ [          -2]]
+is -6
+
+Example 7 (transpose):
+the transpose of
+[[           1            2            3            4]
+ [           5            6            7            8]
+ [           9           10           11           12]
+ [          13           14           15           16]]
+is
+[[           1            5            9           13]
+ [           2            6           10           14]
+ [           3            7           11           15]
+ [           4            8           12           16]]
+
+Example 8 (inverse):
+the inverse of
+[[           2            3            5            7]
+ [          11           13           17           19]
+ [          23           29           31           37]
+ [          41           43           47           53]]
+is
+[[    0.272727    -0.218182         -0.2     0.181818]
+ [   -0.454545   -0.0363636          0.3    -0.136364]
+ [   -0.590909     0.697727         -0.1    -0.102273]
+ [    0.681818    -0.420455 -5.67728e-17    0.0795455]]
+
+[[           2            3            5            7]
+ [          11           13           17           19]
+ [          23           29           31           37]
+ [          41           43           47           53]]
+times
+[[    0.272727    -0.218182         -0.2     0.181818]
+ [   -0.454545   -0.0363636          0.3    -0.136364]
+ [   -0.590909     0.697727         -0.1    -0.102273]
+ [    0.681818    -0.420455 -5.67728e-17    0.0795455]]
+is
+[[           1            0  4.66798e-17 -1.11022e-16]
+ [-3.55271e-15            1  2.53585e-16            0]
+ [           0 -1.77636e-15            1  4.44089e-16]
+ [-7.10543e-15  7.10543e-15  1.43194e-15            1]]
+
+[[    0.272727    -0.218182         -0.2     0.181818]
+ [   -0.454545   -0.0363636          0.3    -0.136364]
+ [   -0.590909     0.697727         -0.1    -0.102273]
+ [    0.681818    -0.420455 -5.67728e-17    0.0795455]]
+times
+[[           2            3            5            7]
+ [          11           13           17           19]
+ [          23           29           31           37]
+ [          41           43           47           53]]
+is
+[[           1 -8.88178e-16            0 -1.77636e-15]
+ [ 8.88178e-16            1            0  1.77636e-15]
+ [ 8.88178e-16 -8.88178e-16            1  8.88178e-16]
+ [-8.88178e-16 -8.88178e-16            0            1]]

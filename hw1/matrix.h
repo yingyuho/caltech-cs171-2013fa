@@ -125,7 +125,7 @@ public:
 
     // matrix multiplication
     template<matdim_t C2>
-    Matrix operator* (const Matrix<T,C,C2> m) const {
+    Matrix<T,R,C2> operator* (const Matrix<T,C,C2> &m) const {
         Matrix<T,R,C2> result;
         // the second matrix is pre-transposed for speed
         Matrix<T,C2,C> m2 = m.transpose();
@@ -136,11 +136,10 @@ public:
     }
 
     // vector dot(A,B) := trace(A.B^T)
-    Matrix dot (const Matrix m) const {
+    T dot (const Matrix &m) const {
         T x = T();
         for (matdim_t i = 0; i < R; i++)
-            for (matdim_t j = 0; j < R; j++)
-                x += dot_row(&(this->at(i,0)), &(m.at(j,0)));
+            x += dot_row(&(this->at(i,0)), &(m.at(i,0)));
         return x;
     }
 
@@ -242,7 +241,7 @@ ostream& operator<<(ostream &os, const Matrix<T,R,C> &m) {
         if (i > 0) { os << " ["; } else { os << "["; }
         for (matdim_t j = 0; j < C; j++) {
             if (j > 0) { os << " "; }
-            os.width(10);
+            os.width(12);
             os << m.at(i,j);
         }
         os << "]";

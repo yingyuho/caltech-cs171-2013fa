@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
         transform = transform * (**it);
     }
 
-    cout << transform;
+    cout << transform << endl;
 
     return 0; 
 }

@@ -1,27 +1,24 @@
 %{
-//#include <stdint.h>
 #include <FlexLexer.h>
 #include <string>
 #include <list>
 #include <cmath>
 #include <iostream>
 #include "matrix.h"
+#include "image2d.h"
 
 using namespace std;
 
 int yyerror(const char *s);
 int yylex();
-typedef Matrix<double,2,1> Vec2;
-typedef list<Vec2*> Polygon2;
-typedef list<Polygon2*> Image2;
+
 static Image2 *results;
 %}
 
-%union
-{
+%union {
     double fval;
-    list< Matrix<double,2,1>* > *polyg_ptr;
-    list< list< Matrix<double,2,1>* >*> *image_ptr;
+    Polygon2 *polyg_ptr;
+    Image2 *image_ptr;
 }
 
 %defines
@@ -34,6 +31,7 @@ static Image2 *results;
 
 %%
 
+// each image is a list of polylines
 image:
     {
         results = $$ = new Image2;
@@ -42,10 +40,11 @@ image:
     image POLYLTOK polygon
     {
         $1->push_back($3);
-	$$ = $1;
+        $$ = $1;
     }
 ;
 
+// each polyline is a list of 2-D real vectors
 polygon:
     {
         $$ = new Polygon2;
@@ -54,8 +53,8 @@ polygon:
     polygon FLOAT FLOAT
     {
         double pt[2] = {$2,$3};
-	$1->push_back(new Vec2(pt));
-	$$ = $1;
+        $1->push_back(new Vec2(pt));
+        $$ = $1;
     }
 ;
 
@@ -63,24 +62,20 @@ polygon:
 
 static FlexLexer *lexer;
 
-int yyerror(const char * s)
-{
+int yyerror(const char * s) {
    cerr << "Parse error: " << s << endl;
    return 0;
 }
 
-int yylex()
-{
+int yylex() {
    return lexer->yylex();
 }
 
-Image2 *parse_image(istream &datafile)
-{
+Image2 *parse_image(istream &datafile) {
    // Construct the lexer.
    lexer = new yyFlexLexer(&datafile);
    // Run the parser.
-   if(yyparse())
-   {
+   if(yyparse()) {
        cerr << "Parse failed!" << endl;
        exit(1);
    }
