@@ -10,7 +10,7 @@ LDFLAGS=
 all: $(PRG0) $(PRG1) $(PRG2)
 
 $(PRG0): $(PRG0).o
-	g++ $(LDFLAGS) $(CFLAGS) -o $(PRG1) $^
+	g++ $(LDFLAGS) $(CFLAGS) -o $(PRG0) $^
 
 $(PRG1): $(OBJECTS1)
 	g++ $(LDFLAGS) $(CFLAGS) -o $(PRG1) $^

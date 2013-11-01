@@ -1,6 +1,8 @@
 #include <iostream>
 #include "matrix.h"
 
+using namespace std;
+
 int main()
 {
     typedef Matrix<double,4,4> Mat44;

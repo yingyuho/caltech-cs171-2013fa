@@ -10,6 +10,7 @@
 #define _bitmap_h
 
 #include <stdexcept>
+#include <iostream>
 #include <algorithm>
 #include <list>
 
@@ -19,7 +20,7 @@ struct PixelCoord
     PixelCoord(int x1, int y1) { x = x1; y = y1; }
 };
 
-typedef list<PixelCoord*> PixelList;
+typedef std::list<PixelCoord*> PixelList;
 
 // convert a line segment into a list of pixels with Bresenham algorithm
 PixelList* bresenham(int x1, int x2, int y1, int y2);
@@ -51,7 +52,7 @@ public:
         // check whether arguments are valid
 	    #define CHECK_ARG_POSITIVITY(arg) \
 	    if (double(arg)<=0) \
-	        throw invalid_argument(#arg " must be positive.");
+	        throw std::invalid_argument(#arg " must be positive.");
 
 	    CHECK_ARG_POSITIVITY((xMax - xMin))
 	    CHECK_ARG_POSITIVITY((yMax - yMin))
@@ -117,17 +118,17 @@ public:
     }
 
 	// output PPM image
-	ostream &print_ppm(ostream &os)
+	std::ostream &print_ppm(std::ostream &os)
 	{
-	    os << "P3" << endl \
-	       << xRes << " " << yRes << endl \
-	       << maxIntensity << endl << endl;
+	    os << "P3" << std::endl \
+	       << xRes << " " << yRes << std::endl \
+	       << maxIntensity << std::endl << std::endl;
 
 	    for (int i = 0; i < yRes; i++)
 	        for (int j = 0; j < xRes; j++)
 	            os << at(j,i,0) << " "\
 	               << at(j,i,1) << " "\
-	               << at(j,i,2) << endl;
+	               << at(j,i,2) << std::endl;
 
 	    return os;
 	}

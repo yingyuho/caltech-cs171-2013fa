@@ -20,7 +20,7 @@ static list<Matrix44*> *results;
     double fval;
     Matrix<double,3,1>* vecptr;
     Matrix<double,4,4>* matptr;
-    list< Matrix<double,4,4>* >* matlist;
+    std::list< Matrix<double,4,4>* >* matlist;
 }
 
 %defines

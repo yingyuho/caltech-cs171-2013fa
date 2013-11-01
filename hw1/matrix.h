@@ -10,31 +10,30 @@
 #define _matrix_h
 
 #include <cmath>
-//#include <iostream>
-//#include <functional>
+#include <iostream>
+#include <algorithm>
 #include <stdexcept>
-using namespace std;
 
 typedef unsigned int matdim_t;
 
 class MatrixException { public: virtual ~MatrixException() {} };
 
 // call when, for example, trying to invert a non-square matrix
-class WrongDimException : public MatrixException, public logic_error { 
+class WrongDimException : public MatrixException, public std::logic_error { 
 public:
-    WrongDimException() : logic_error("incorrect dimensions") {}
+    WrongDimException() : std::logic_error("incorrect dimensions") {}
     virtual ~WrongDimException() throw () {}
 };
 
-class ZeroDetException : public MatrixException, public runtime_error { 
+class ZeroDetException : public MatrixException, public std::runtime_error { 
 public:
-    ZeroDetException() : runtime_error("determinant is zero") {}
+    ZeroDetException() : std::runtime_error("determinant is zero") {}
     ~ZeroDetException() throw () {}
 };
 
-class ZeroNormException : public MatrixException, public runtime_error {
+class ZeroNormException : public MatrixException, public std::runtime_error {
 public:
-    ZeroNormException() : runtime_error("norm is zero") {}
+    ZeroNormException() : std::runtime_error("norm is zero") {}
     ~ZeroNormException() throw () {}
 };
 
@@ -235,7 +234,7 @@ Matrix<T,R,C> operator* (const T x, const Matrix<T,R,C> &m) { return m*x; }
 
 // printing out nicely
 template<typename T, matdim_t R, matdim_t C>
-ostream& operator<<(ostream &os, const Matrix<T,R,C> &m) {
+std::ostream& operator<<(std::ostream &os, const Matrix<T,R,C> &m) {
     os << "[";
     for (matdim_t i = 0; i < R; i++) {
         if (i > 0) { os << " ["; } else { os << "["; }
@@ -245,9 +244,9 @@ ostream& operator<<(ostream &os, const Matrix<T,R,C> &m) {
             os << m.at(i,j);
         }
         os << "]";
-        if (i < R-1) { os << endl; }
+        if (i < R-1) { os << std::endl; }
     }
-    os << "]" << endl;
+    os << "]" << std::endl;
     return os;
 }
 
