@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
                              it != transform_list->end();
                              it++)
     {
-        // left multiplication by matrices in the list
+        // right multiplication by matrices in the list
         transform = transform * (**it);
     }
 
