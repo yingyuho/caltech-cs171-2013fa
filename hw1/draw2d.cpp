@@ -32,13 +32,16 @@ int main(int argc, char* argv[])
                           it1 != image->end();
                           it1++)
     {
+        if ((*it1)->begin() == (*it1)->end())
+            continue;
+
         Vec2 *v = (*it1)->front();
-        // for each vertex (the first vertex will be repeated)
-        for (Polygon2::iterator it2 = (*it1)->begin();
+        // for each vertex i, 2 <= i <= N
+        for (Polygon2::iterator it2 = ++((*it1)->begin());
                                 it2 != (*it1)->end();
                                 it2++)
         {
-            // draw a line between the previous and the current vertex
+            // draw a line between vertex i-1 and vertex i
             PixelCoord xy1 = canvas.ndc_to_pixel( (*v)[0], (*v)[1] );
             v = (*it2);
             PixelCoord xy2 = canvas.ndc_to_pixel( (*v)[0], (*v)[1] );
