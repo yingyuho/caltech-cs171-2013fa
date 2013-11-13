@@ -1,0 +1,423 @@
+%{
+#include <list>
+#include <cstdlib>
+#include <string>
+#include "inventor.h"
+#include "parser_param.h"
+#include <FlexLexer.h>
+using namespace std;
+
+int yyerror(const char *s);
+int yylex();
+
+
+static Inventor *result;
+%}
+
+
+%union
+{
+    char* strVal;
+    double fVal;
+    int iVal;
+
+    Vec3* vec3P;
+    Vec4* vec4P;
+
+    PerspectiveCamera* pCamP;
+    Separator* sepP;
+    Coordinate3* coord3P;
+    IndexedFaceSet* ifsP;
+    IndexedFaceLine* iflP;
+
+    InventorParam* iParamP;
+    PCameraParam* pcParamP;
+    SeparatorParam* sParamP;
+    TransformParam* tParamP;
+}
+
+%defines
+// inventor    ::= blocks
+// blocks      ::= block [blocks]
+// block       ::= camerablock | sepblock
+%type   <iParamP>   blocks
+// camerablock ::= PCAMERA open cameralines close
+// cameralines ::= cameraline [cameralines]
+// cameraline  ::= POS triple | ORIENT quad | NDIST NUMBER
+//               | FDIST NUMBER | LEFT NUMBER | RIGHT NUMBER
+//               | TOP NUMBER | BOTTOM NUMBER
+%type   <pCamP>     camerablock
+%token  PCAMERA
+%type   <pcParamP>  cameralines
+%token  POS
+%token  ORIENT
+%token  NDIST
+%token  FDIST
+%token  LEFT
+%token  RIGHT
+%token  TOP
+%token  BOTTOM
+// sepblock    ::= SEPARATOR open sepitems close
+// sepitems    ::= sepitem [sepitems]
+%type  <sepP>       sepblock
+%token SEPARATOR
+%type  <sParamP>    sepitems
+// sepitem     ::= TRANSFORM open translines close
+//               | COORD3 open POINT sqopen triples sqclose close
+//               | IFACESET open ifslines close
+// triple      ::= NUMBER NUMBER NUMBER
+// triples     ::= triple [COMMA triples]
+%token  COORD3
+%token  POINT
+%type   <coord3P>   triples
+%type   <vec3P>     triple
+// translines  ::= transline [translines]
+// transline   ::= TRANSLAT triple
+//               | SFACTOR triple
+//               | ROT quad
+%token  TRANSFORM
+%type   <tParamP>   translines
+%token  TRANSLAT
+%token  ROT
+%token  SFACTOR
+%type   <vec4P>     quad
+// ifslines    ::= ifsline [ifslines]
+// ifsline     ::= COORDINDEX sqopen singles sqclose
+%token  IFACESET
+%type   <ifsP>      ifslines
+%type   <iflP>      ifsline
+%token  COORDINDEX
+%type   <iflP>      singles
+// quad        ::= NUMBER NUMBER NUMBER NUMBER
+// open        ::= LBRACE
+// close       ::= RBRACE
+// sqopen      ::= LBRACKET
+// sqclose     ::= RBRACKET
+%token  <strVal>    NUMBER
+%type   <iVal>      intnum
+%type   <fVal>      floatnum
+%token  LBRACE
+%token  RBRACE
+%token  LBRACKET
+%token  RBRACKET
+%token  COMMA
+
+%%
+// inventor    ::= blocks
+// blocks      ::= block [blocks]
+// block       ::= camerablock | sepblock
+inventor:
+    blocks
+    {
+        if ( $1->incomplete_param() ) {
+            yyerror($1->incomplete_param_msg());
+        } else {
+            result = $1->make_object();
+            delete $1;
+        }
+    }
+;
+blocks:
+    {   
+        $$ = new InventorParam(); 
+    }
+    |
+    blocks camerablock
+    {
+        $$ = $1;
+        if ($$->pCamPtr)
+            yyerror("More than one PerspectiveCamera");
+        else
+            $$->pCamPtr = $2;
+    }
+    | 
+    blocks sepblock
+    {
+        $$ = $1;
+        $$->sepList.push_back($2);
+    }
+;
+// camerablock ::= PCAMERA open cameralines close
+camerablock:
+    PCAMERA open cameralines close
+    {
+        if ( $3->incomplete_param() ) {
+            yyerror($3->incomplete_param_msg());
+        } else {
+            InventorHelper::watch("Made PerspectiveCamera\n");
+            $$ = $3->make_object();
+            delete $3;
+        }
+    }
+;
+// cameralines ::= cameraline [cameralines]
+// cameraline  ::= POS triple | ORIENT quad | NDIST NUMBER
+//               | FDIST NUMBER | LEFT NUMBER | RIGHT NUMBER
+//               | TOP NUMBER | BOTTOM NUMBER
+cameralines:
+    {
+        $$ = new PCameraParam();
+    }
+    |
+    cameralines POS triple
+    {
+        $$ = $1;
+        if ($$->pos)
+            yyerror("More than one position");
+        else
+            $$->pos = $3;
+    }
+    |
+    cameralines ORIENT quad
+    {
+        $$ = $1;
+        if ($$->orient)
+            yyerror("More than one orientation");
+        else
+            $$->orient = $3;
+    }
+    |
+    cameralines NDIST floatnum
+    {
+        $$ = $1;
+        if ($$->n)
+            yyerror("More than one nearDistance");
+        else
+            $$->n = new double($3);
+    }
+    |
+    cameralines FDIST floatnum
+    {
+        $$ = $1;
+        if ($$->f)
+            yyerror("More than one farDistance");
+        else
+            $$->f = new double($3);
+    }
+    |
+    cameralines LEFT floatnum
+    {
+        $$ = $1;
+        if ($$->l)
+            yyerror("More than one left");
+        else
+            $$->l = new double($3);
+    }
+    |
+    cameralines RIGHT floatnum
+    {
+        $$ = $1;
+        if ($$->r)
+            yyerror("More than one right");
+        else
+            $$->r = new double($3);
+    }
+    |
+    cameralines TOP floatnum
+    {
+        $$ = $1;
+        if ($$->t)
+            yyerror("More than one top");
+        else
+            $$->t = new double($3);
+    }
+    |
+    cameralines BOTTOM floatnum
+    {
+        $$ = $1;
+        if ($$->b)
+            yyerror("More than one bottom");
+        else
+            $$->b = new double($3);
+    }
+;
+// sepblock    ::= SEPARATOR open sepitems close
+sepblock:
+    SEPARATOR open sepitems close
+    {
+        $$ = $3->make_object();
+        delete $3;
+    }
+;
+// sepitems    ::= sepitem [sepitems]
+// sepitem     ::= TRANSFORM open translines close
+//               | COORD3 open POINT sqopen triples sqclose close
+//               | IFACESET open ifslines close
+sepitems:
+    {
+        $$ = new SeparatorParam();
+    }
+    |
+    sepitems TRANSFORM open translines close
+    {
+        $$ = $1;
+        $$->tPtr->push_right($4->make_object());
+        delete $4;
+    }
+    | 
+    sepitems COORD3 open POINT sqopen triples sqclose close
+    {
+        $$ = $1;
+        if ($$->cPtr)
+            yyerror("More than one Coordinate3");
+        else
+            $$->cPtr = $6;
+    }
+    | 
+    sepitems IFACESET open ifslines close
+    {
+        $$ = $1;
+        if ($$->iPtr)
+            yyerror("More than one IndexedFaceSet");
+        else
+            $$->iPtr = $4;
+    }
+;
+// translines  ::= transline [translines]
+// transline   ::= TRANSLAT triple
+//               | SFACTOR triple
+//               | ROT quad
+translines:
+    {
+        $$ = new TransformParam();
+    }
+    |
+    translines TRANSLAT triple
+    {
+        $$ = $1;
+        if ($$->t) {
+            yyerror("More than one translation");
+        } else {
+            $$->t = new Translation(*($3));
+            delete $3;
+        }
+    }
+    |
+    translines SFACTOR triple
+    {
+        $$ = $1;
+        if ($$->s) {
+            yyerror("More than one scaleFactor");
+        } else {
+            $$->s = new ScaleFactor(*($3));
+            delete $3;
+        }
+    }
+    |
+    translines ROT quad
+    {
+        $$ = $1;
+        if ($$->r) {
+            yyerror("More than one rotation");
+        } else {
+            $$->r = new Rotation(*($3));
+            delete $3;
+        }
+    }
+;
+// ifslines    ::= ifsline [ifslines]
+ifslines:
+    {
+        $$ = new IndexedFaceSet();
+    }
+    |
+    ifslines ifsline
+    {
+        $$ = $1;
+        $$->add_ifsline($2);
+    }
+;
+// ifsline     ::= COORDINDEX sqopen singles sqclose
+ifsline:
+    COORDINDEX sqopen singles sqclose
+    {
+        $$ = $3;
+    }
+;
+// singles     ::= single [COMMA single]
+singles:
+    intnum
+    {
+        $$ = new IndexedFaceLine();
+        $$->add_coord_index($1);
+    }
+    |
+    singles COMMA intnum
+    {
+        $$ = $1;
+        $$->add_coord_index($3);
+    }
+;
+// triples     ::= triple [COMMA triples]
+triples:
+    triple
+    {
+        $$ = new Coordinate3();
+        $$->add_point(*$1);
+        delete $1;
+    }
+    |
+    triples COMMA triple
+    {
+        $$ = $1;
+        $$->add_point(*$3);
+        delete $3;
+    }
+;
+// triple      ::= NUMBER NUMBER NUMBER
+triple:
+    floatnum floatnum floatnum
+    {
+        double v[3] = {$1,$2,$3};
+        $$ = new Vec3(v);
+    }
+;
+// quad        ::= NUMBER NUMBER NUMBER NUMBER
+quad:
+    floatnum floatnum floatnum floatnum
+    {
+        double v[4] = {$1,$2,$3,$4};
+        $$ = new Vec4(v);
+    }
+;
+floatnum: NUMBER { $$ = atof($1); };
+intnum: NUMBER { $$ = atoi($1); };
+// open        ::= LBRACE
+// close       ::= RBRACE
+// sqopen      ::= LBRACKET
+// sqclose     ::= RBRACKET
+open: LBRACE {};
+close: RBRACE {};
+sqopen: LBRACKET {};
+sqclose: RBRACKET {};
+
+%%
+
+static FlexLexer *lexer;
+
+int yyerror(const char * s)
+{
+   cerr << "Parse error: " << s << endl;
+   return 0;
+}
+
+int yylex()
+{
+   return lexer->yylex();
+}
+
+Inventor *parse_inventor(istream &datafile)
+{
+   // Construct the lexer.
+   lexer = new yyFlexLexer(&datafile);
+   // Run the parser.
+   if(yyparse())
+   {
+       cerr << "Parse failed!" << endl;
+       exit(1);
+   }
+
+   delete lexer;
+   return result;
+}
+
