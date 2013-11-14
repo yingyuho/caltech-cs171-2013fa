@@ -2,22 +2,17 @@
 #include <list>
 #include <vector>
 #include <cmath>
-#include "transform.h"
 #include "inventor.h"
 #include "canvas.h"
 
 using namespace std;
-typedef Matrix<double,4,4> Mat44;
-typedef Matrix<double,3,1> Vec3;
-typedef list<Mat44*> listMat44;
 
 Inventor* parse_inventor(istream &datafile);
 
 int main(int argc, char* argv[])
 {   
     // check if all required arguments are present
-    if (argc < 3)
-    {
+    if (argc < 3) {
         cerr << "Usage: " << argv[0] << " xRes yRes" << endl;
         return 1;
     }
@@ -26,6 +21,7 @@ int main(int argc, char* argv[])
 
     Canvas<vector> * canvas;
 
+    // make sure xRes, yRes > 0 so that canvas is successfully built
     try {
         canvas = new Canvas<vector> (res[0],res[1]);
     } catch (const std::invalid_argument& e) {
@@ -33,40 +29,36 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // parse inventer commands from stdin
     Inventor * inv = parse_inventor(cin);
 
-    IntVec2 resVec(res);
-    list<list<IntVec2>*> plList;
+    // make sure the parser doesn't return a null pointer
+    if ( !inv ) { cerr << "Inventor object is not made." << endl; return 1; }
+
+    // retrieve list of polygons (in pixel coordinates) from inventor object
+    typedef PolygonBuilder<IntVec2> PB;
+    PB::VertexType resVec(res);
+    PB::PolygonList plList;
     inv->build_polygon_list( plList, resVec );
 
 
-    for ( list<list<IntVec2>*>::const_iterator it1 = plList.begin(); it1 != plList.end(); it1++ ) {
+    for ( PB::PolygonCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {
+        // ignore "faces" with only zero or one vertex
         if ( (*it1)->size() < 2 ) { continue; }
 
-        list<IntVec2>::const_iterator it2_1 = (*it1)->begin();
-
-        for ( list<IntVec2>::const_iterator it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
-            canvas->draw_pixel(canvas->bresenham(*it2_1,*it2_2));
+        // connect p(i) and p(i+1)
+        PB::VertexCIter it2_1 = (*it1)->begin();
+        for ( PB::VertexCIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
+            canvas->draw_line(*it2_1,*it2_2);
             it2_1 = it2_2;
         }
 
-        canvas->draw_pixel(canvas->bresenham(*it2_1,(*it1)->front()));
+        // close the polygon by connecting p(n) and p(1)
+        canvas->draw_line(*it2_1,(*it1)->front());
     }
 
+    // send ppm image to stdout
     canvas->print_ppm(cout);
-
-    // // start with the identity matrix
-    // Mat44 transform = Mat44(1.);
-
-    // for (listMat44::iterator it = transform_list->begin();
-    //                          it != transform_list->end();
-    //                          it++)
-    // {
-    //     // right multiplication by matrices in the list
-    //     transform = transform * (**it);
-    // }
-
-    // cout << t->to_matrix() << endl;
 
     delete inv;
     delete canvas;

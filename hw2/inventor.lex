@@ -4,7 +4,7 @@
 #include <list>
 #include "inventor.h"
 #include "parser_param.h"
-#include "wireframe.tab.hpp"
+#include "inventor.tab.hpp"
 using namespace std;
 %}
 %option noyywrap

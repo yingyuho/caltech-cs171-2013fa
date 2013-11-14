@@ -15,22 +15,19 @@
 #include <typeinfo>
 #include "matrix.h"
 
-// pure abstract base class
+// pure abstract base class for invertible transforms
 class Transform;
 // subclasses
-class MatrixTransform;
+//class MatrixTransform;
 class ComboTransform;
-class TRSTransform;
+//class TRSTransform;
 class Translation;
 class Rotation;
 class ScaleFactor;
 
-class NonTRSBlockException;
+//class NonTRSBlockException;
 
-typedef std::list<Transform*> TransformList;
-
-
-class Transform {
+class Transform : public Mat44Maker {
 public:
     typedef Matrix<double,4,4> Mat44;
     typedef Matrix<double,3,1> Vec3;
@@ -132,7 +129,7 @@ public:
     virtual Transform* clone() const { return new ScaleFactor(x,y,z); }
 };
 
-class MatrixTransform : public Transform {
+/*class MatrixTransform : public Transform {
 private:
     Mat44 data;
     Mat44 data_inv;
@@ -156,14 +153,14 @@ public:
     virtual Transform* inverse() const { return new MatrixTransform(data_inv, data); }
 
     virtual Transform* clone() const { return new MatrixTransform(data, data_inv); }
-};
+};*/
 
 class ComboTransform : public Transform {
 private:
+    typedef std::list<Transform*> TransformList;
     TransformList tList;
 
 public:
-
     ComboTransform() {}
 
     ComboTransform(const TransformList *tPtrList2) {
@@ -205,13 +202,13 @@ public:
     }
 };
 
-class NonTRSBlockException : public std::runtime_error { 
+/*class NonTRSBlockException : public std::runtime_error { 
 public:
     NonTRSBlockException(const std::string& msg) : std::runtime_error(msg) {}
     ~NonTRSBlockException() throw () {}
-};
+};*/
 
-class TRSTransform : public Transform {
+/*class TRSTransform : public Transform {
 private:
     Transform* trsArray[3];
     #define IDT typeid(Translation).hash_code()
@@ -277,7 +274,7 @@ public:
 
         return t;
     }
-};
+};*/
 
 
 #endif //   _transform_h

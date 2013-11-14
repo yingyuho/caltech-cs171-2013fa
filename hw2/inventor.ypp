@@ -2,6 +2,7 @@
 #include <list>
 #include <cstdlib>
 #include <string>
+#include "transform.h"
 #include "inventor.h"
 #include "parser_param.h"
 #include <FlexLexer.h>
@@ -30,6 +31,7 @@ static Inventor *result;
     IndexedFaceSet* ifsP;
     IndexedFaceLine* iflP;
 
+    // parameter collector classes
     InventorParam* iParamP;
     PCameraParam* pcParamP;
     SeparatorParam* sParamP;
@@ -324,7 +326,7 @@ ifslines:
     ifslines ifsline
     {
         $$ = $1;
-        $$->add_ifsline($2);
+        $$->feed_param($2);
     }
 ;
 // ifsline     ::= COORDINDEX sqopen singles sqclose
@@ -339,13 +341,13 @@ singles:
     intnum
     {
         $$ = new IndexedFaceLine();
-        $$->add_coord_index($1);
+        $$->feed_param($1);
     }
     |
     singles COMMA intnum
     {
         $$ = $1;
-        $$->add_coord_index($3);
+        $$->feed_param($3);
     }
 ;
 // triples     ::= triple [COMMA triples]
@@ -353,14 +355,14 @@ triples:
     triple
     {
         $$ = new Coordinate3();
-        $$->add_point(*$1);
+        $$->feed_param(*$1);
         delete $1;
     }
     |
     triples COMMA triple
     {
         $$ = $1;
-        $$->add_point(*$3);
+        $$->feed_param(*$3);
         delete $3;
     }
 ;

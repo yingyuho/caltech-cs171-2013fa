@@ -1,6 +1,10 @@
 //
 //  parser_param.h
 //  
+//  This helps a parser collecting and checking required parameters for constructing objects.
+//
+//  All pointers taken by an instance of ParserParam's children classes as parameters MUST NOT
+//  be used elsewhere and these pointers are deleted when the instance is destroyed.
 //
 //  Created by Ying-Yu Ho on 11/05/13.
 //
@@ -11,12 +15,16 @@
 
 #include "inventor.h"
 
+// T is the type of object(s) to make
 template <typename T>
 struct ParserParam {
 public:
     virtual ~ParserParam() {}
+    // true if some parameters are missing
     virtual bool incomplete_param() const = 0;
+    // hint what are missing
     virtual const char* incomplete_param_msg() const = 0;
+    // "new" an object from stored parameters and return its pointer
     virtual T* make_object() const = 0;
 };
 
@@ -40,7 +48,7 @@ public:
         if (!incomplete_param()) {
             Inventor *i = new Inventor(pCamPtr);
             for (std::list<Separator*>::const_iterator it = sepList.begin(); it != sepList.end(); it++)
-                i->add_separator(*it);
+                i->feed_param(*it);
             return i;
         } else { return 0; }
     }
@@ -121,6 +129,7 @@ public:
 
 };
 
+// this enforces the TRS order of transforms
 struct TransformParam : public ParserParam<ComboTransform> {
 public:
     Translation *t;

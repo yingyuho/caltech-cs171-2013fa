@@ -1,36 +1,41 @@
-PRG1=wireframe
+PRG = wireframe
+LEXER = inventor
+PARSER = inventor
+OBJECTS = $(PARSER).tab.o $(LEXER).yy.o main.o inventor.o
+SOURCES = *.cpp *.h
 
-# PRG2=draw2d
-OBJECTS1=$(PRG1).tab.o $(PRG1).yy.o $(PRG1).o
-# OBJECTS2=$(PRG2).tab.o $(PRG2).yy.o $(PRG2).o
-SOURCES=*.cpp *.h
-CFLAGS=
-LDFLAGS=
+CC = g++
+LD = g++
+CFLAGS = -O0
+LDFLAGS = 
 
-all: $(PRG1)
+all: $(PRG)
 
-$(PRG1): $(OBJECTS1)
-	g++ $(LDFLAGS) $(CFLAGS) -o $(PRG1) $^
-
-# $(PRG2): $(OBJECTS2)
-# 	g++ $(LDFLAGS) $(CFLAGS) -o $(PRG2) $^
+$(PRG): $(OBJECTS)
+	$(LD) $(LDFLAGS) $(CFLAGS) -o $(PRG) $^
 
 clean:
-	rm *.o *.yy.cpp *.tab.cpp *.tab.hpp
+	rm -f *.o *.yy.cpp *.tab.cpp *.tab.hpp
 
-$(PRG1).tab.cpp $(PRG1).tab.hpp: $(PRG1).ypp
-	bison -d $(PRG1).ypp
+$(PARSER).tab.cpp $(PARSER).tab.hpp: $(PARSER).ypp
+	bison -d $(PARSER).ypp
 
-$(PRG1).yy.cpp: $(PRG1).lex
-	flex -+ -o $(PRG1).yy.cpp $(PRG1).lex
+$(LEXER).yy.cpp: $(LEXER).lex
+	flex -+ -o $(LEXER).yy.cpp $(LEXER).lex
 
-# $(PRG2).tab.cpp $(PRG2).tab.hpp: $(PRG2).ypp
-# 	bison -d $(PRG2).ypp
+$(PARSER).tab.o: $(PARSER).tab.cpp inventor.o transform.h parser_param.h matrix.h
+	$(CC) -c $(CFLAGS) -o $@ $<
 
-# $(PRG2).yy.cpp: $(PRG2).lex
-# 	flex -+ -o $(PRG2).yy.cpp $(PRG2).lex
+$(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.h parser_param.h matrix.h
+	$(CC) -c $(CFLAGS) -o $@ $<
 
-.cpp.o:
-	g++ -c $(CFLAGS) -o $@ $<
+main.o: main.cpp inventor.o canvas.h canvas.cpp matrix.h
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+inventor.o: inventor.cpp inventor.h transform.h matrix.h
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+#.cpp.o: $(HEADERS)
+#	g++ -c $(CFLAGS) -o $@ $<
 
 .PHONY: all clean
