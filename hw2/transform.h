@@ -1,6 +1,8 @@
 //
 //  transform.h
 //  
+//  Interface and concrete classes that describe invertible transforms on 4x1 vectors
+//  and give matrix representations when needed.
 //
 //  Created by Ying-Yu Ho on 10/31/13.
 //
@@ -17,10 +19,9 @@
 
 // pure abstract base class for invertible transforms
 class Transform;
+
 // subclasses
-//class MatrixTransform;
 class ComboTransform;
-//class TRSTransform;
 class Translation;
 class Rotation;
 class ScaleFactor;

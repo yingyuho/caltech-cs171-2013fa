@@ -1,6 +1,7 @@
 //
 //  canvas.h
-//  
+//
+//  A canvas that supports Bresenham's algorithm and PPM output
 //
 //  Created by Ying-Yu Ho on 10/29/13.
 //
