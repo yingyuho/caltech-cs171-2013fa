@@ -1,0 +1,32 @@
+===========
+Compilation
+===========
+
+"make" gives the program "wireframe"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+This is a 3-D wireframe renderer that reads input in OpenInventor format 
+from stdin and writes the image in the PPM format to stdout.
+
+Example: ./wireframe [xRes] [yRes] < [input data]
+         ./wireframe [xRes] [yRes] < [input data] > [name.ppm]
+
+Here xRes and yRes are the size of the image to be made.
+
+Conversion to more popular image formats is also possible.
+
+Example: ./wireframe [xRes] [yRes] < [input data] | convert - [name.png]
+         ./wireframe [xRes] [yRes] < [input data] | convert - [name.jpg]
+
+========================
+OpenInventor File Format
+========================
+
+For this assignment, see
+
+http://courses.cms.caltech.edu/cs171/assignments/hw2.html
