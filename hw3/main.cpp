@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "inventor.h"
+#include "mesh_utility.h"
 #include "canvas.h"
 
 using namespace std;
@@ -32,24 +33,36 @@ int main(int argc, char* argv[])
     // parse inventer commands from stdin
     Inventor * inv = parse_inventor(cin);
 
-    cout << "inv = " << inv << endl;
+    // cout << "inv = " << inv << endl;
 
     // make sure the parser doesn't return a null pointer
     if ( !inv ) { cerr << "Inventor object is not made." << endl; return 1; }
 
+    // validate that coordIndex and normalIndex are consistent for each separator
+    if ( inv->validate_index_msg() != "" ) {
+        cerr << "Inconsistent coordIndex and normalIndex:" << endl \
+             << inv->validate_index_msg() << endl;
+        return 1;
+    }
+
     // retrieve list of polygons (in pixel coordinates) from inventor object
     //PB::VertexType resVec(res);
-    PBCoord::PolygonList plList;
-    inv->build_polygon_list( plList );
+    MBCoord::Mesh cList;
+    MBNorml::Mesh nList;
+    inv->process_mesh(cList);
+    inv->process_mesh(nList);
+
+    triangulate<Vec4>(cList);
+    triangulate<NVec3>(nList);
 
 
-    /*for ( PB::PolygonCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {
+    /*for ( PB::MeshCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {
         // ignore "faces" with only zero or one vertex
         if ( (*it1)->size() < 2 ) { continue; }
 
         // connect p(i) and p(i+1)
-        PB::VertexCIter it2_1 = (*it1)->begin();
-        for ( PB::VertexCIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
+        PB::FaceCIter it2_1 = (*it1)->begin();
+        for ( PB::FaceCIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
             canvas->draw_line(*it2_1,*it2_2);
             it2_1 = it2_2;
         }

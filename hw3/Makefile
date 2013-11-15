@@ -29,10 +29,10 @@ $(PARSER).tab.o: $(PARSER).tab.cpp inventor.o parser_param.h
 $(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.o parser_param.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-main.o: main.cpp inventor.o canvas.h canvas.cpp
+main.o: main.cpp inventor.o canvas.h canvas.cpp mesh_utility.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-inventor.o: inventor.cpp inventor.h transform.o
+inventor.o: inventor.cpp inventor.h transform.o mesh_processor.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 parser_param.o: parser_param.cpp parser_param.h inventor.o

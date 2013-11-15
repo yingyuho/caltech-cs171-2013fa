@@ -7,8 +7,8 @@ Inventor::~Inventor() {
     sepList.remove_if(InventorHelper::deleteAllPtr<Separator>);
 }
 
-void Inventor::build_polygon_list(PBCoord::PolygonList& pList) const {
-    InventorHelper::watch("Inventor::build_polygon_list()\n");
+void Inventor::process_mesh(MBCoord::Mesh& mesh) const {
+    InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
     for ( std::list<Separator*>::const_iterator it = sepList.begin();\
         it != sepList.end(); it++ ) {
@@ -16,12 +16,12 @@ void Inventor::build_polygon_list(PBCoord::PolygonList& pList) const {
         std::vector<Vec4> wsc = \
             (*it)->get_world_space_coord();
         // and use them to retrieve polygons from the separator
-        (*it)->build_polygon_list(pList, wsc);
+        (*it)->process_mesh(mesh, wsc);
     }
 }
 
-void Inventor::build_polygon_list(PBNorml::PolygonList& pList) const {
-    InventorHelper::watch("Inventor::build_polygon_list()\n");
+void Inventor::process_mesh(MBNorml::Mesh& mesh) const {
+    InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
     for ( std::list<Separator*>::const_iterator it = sepList.begin();\
         it != sepList.end(); it++ ) {
@@ -29,8 +29,36 @@ void Inventor::build_polygon_list(PBNorml::PolygonList& pList) const {
         std::vector<NVec3> wsn = \
             (*it)->get_world_space_normal();
         // and use them to retrieve polygons from the separator
-        (*it)->build_polygon_list(pList, wsn);
+        (*it)->process_mesh(mesh, wsn);
     }
+}
+
+
+bool Inventor::validate_index() const {
+    int v = 0;
+    // for each separator
+    for ( std::list<Separator*>::const_iterator it = sepList.begin()\
+        ; it != sepList.end(); it++ ) { if ( ! (*it)->validate_index() ) return false; }
+    return true;
+}
+
+const std::string Inventor::validate_index_msg() const {
+    std::string s = "";
+    int i = 0;
+    char buffer [50];
+
+    // for each separator
+    for ( std::list<Separator*>::const_iterator it = sepList.begin()\
+    ; it != sepList.end(); it++ ) {
+        std::string ss = (*it)->validate_index_msg();
+        if ( ss != "" ) {
+            std::sprintf(buffer, "Separator[%d]:\n", i);
+            s += buffer + ss;
+            return s;
+        }
+    }
+
+    return "";
 }
 
 // PerspectiveCamera
@@ -55,15 +83,15 @@ Separator::~Separator() {
     if (ifsPtr) delete ifsPtr;
 }
 
-#define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PB)                                                  \
-void Separator::build_polygon_list(PB::PolygonList& pList, const PB::PointMap& pMap) const {    \
-    InventorHelper::watch("Separator::build_polygon_list()\n");                                 \
-    /* retrieve polygons from each indexedFaceSet */                                            \
-    ifsPtr->build_polygon_list(pList, pMap);                                                    \
+#define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MB)                                  \
+void Separator::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) const {  \
+    InventorHelper::watch("Separator::process_mesh()\n");                       \
+    /* retrieve polygons from each indexedFaceSet */                            \
+    ifsPtr->process_mesh(mesh, pMap);                                           \
 }
 
-MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PBCoord);
-MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PBNorml);
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MBCoord);
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MBNorml);
 
 const std::vector<Vec4>& Separator::get_obj_space_coord() const {
     return coord3Ptr->get_obj_space_coord();
@@ -140,6 +168,73 @@ const std::vector<NVec3> Separator::get_world_space_normal() const {
     return wsn;
 }
 
+const std::vector<int>& Separator::get_coord_index() const {
+    return ifsPtr->get_coord_index();
+}
+
+const std::vector<int>& Separator::get_normal_index() const {
+    return ifsPtr->get_normal_index();
+}
+
+bool Separator::validate_index() const {
+    return ( "" == validate_index_msg() );
+}
+
+const std::string Separator::validate_index_msg() const {
+    const std::vector<int>& ci = get_coord_index();
+    const std::vector<int>& ni = get_normal_index();
+
+    char buffer [100];
+
+    if ( ci.size() != ni.size() ) {
+        std::sprintf(buffer\
+            , "coordIndex.size() = %lu and normalIndex.size() = %lu are not equal."\
+            , ci.size(), ni.size());
+        return buffer;
+    }
+
+    for ( int i = 0; i < ci.size(); i++ ) {
+        if ( ci[i] < -1 ) { 
+            std::sprintf(buffer\
+                , "coordIndex[%d] = %d < -1 is not allowed."\
+                , i, ci[i]);
+            return buffer;
+        }
+        if ( ni[i] < -1 ) { 
+            std::sprintf(buffer\
+                , "normalIndex[%d] = %d < -1 is not allowed."\
+                , i, ni[i]);
+            return buffer;
+        }
+        if ( ci[i] >= (int)get_obj_space_coord().size() ) { 
+            std::sprintf(buffer\
+                , "coordIndex[%d] = %d > Coordinate3.size() = %lu is not allowed."\
+                , i, ci[i], get_obj_space_coord().size());
+            return buffer;
+        }
+        if ( ni[i] >= (int)get_obj_space_normal().size() ) { 
+            std::sprintf(buffer\
+                , "normalIndex[%d] = %d > Normal.size() = %lu is not allowed."\
+                , i, ni[i], get_obj_space_normal().size());
+            return buffer;
+        }
+        if ( ci[i] == -1 && ni[i] > -1 ) {
+            std::sprintf(buffer\
+                , "coordIndex[%d] = %d while normalIndex[%d] = %d != -1 is not allowed."\
+                , i, ci[i], i, ni[i]);
+            return buffer;
+        }
+        if ( ni[i] == -1 && ci[i] > -1 ) {
+            std::sprintf(buffer\
+                , "normalIndex[%d] = %d while coordIndex[%d] = %d != -1 is not allowed."\
+                , i, ni[i], i, ci[i]);
+            return buffer;
+        }
+    }
+
+    return "";
+}
+
 // IndexedFaceSet
 
 IndexedFaceSet::~IndexedFaceSet() {
@@ -148,19 +243,19 @@ IndexedFaceSet::~IndexedFaceSet() {
     if (normalIndex) delete normalIndex;
 }
 
-#define MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PB, indVal)                                              \
-void IndexedFaceSet::build_polygon_list(PB::PolygonList& pList, const PB::PointMap& pMap) const {   \
-    InventorHelper::watch("IndexedFaceSet::build_polygon_list()\n");                                \
+#define MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MB, indVal)                                              \
+void IndexedFaceSet::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) const {                 \
+    InventorHelper::watch("IndexedFaceSet::process_mesh()\n");                                      \
                                                                                                     \
-    PB::VertexList * polyLPtr = new PB::VertexList();                                               \
+    MB::Face * polyLPtr = new MB::Face();                                                           \
                                                                                                     \
     for ( std::vector<int>::const_iterator it = indVal->begin(); it != indVal->end(); it++ ) {      \
         InventorHelper::watch(*it);                                                                 \
         if ( *it == -1 ) {                                                                          \
             /* push polygon */                                                                      \
-            pList.push_back(polyLPtr);                                                              \
+            mesh.push_back(polyLPtr);                                                               \
             /* create an empty polygon */                                                           \
-            polyLPtr = new PB::VertexList();                                                        \
+            polyLPtr = new MB::Face();                                                              \
         } else {                                                                                    \
             /* add a vertex to polygon */                                                           \
             polyLPtr->push_back(pMap[*it]);                                                         \
@@ -172,8 +267,8 @@ void IndexedFaceSet::build_polygon_list(PB::PolygonList& pList, const PB::PointM
         delete polyLPtr;                                                                            \
     else                                                                                            \
         /* push non-empty polygon */                                                                \
-        pList.push_back(polyLPtr);                                                                  \
+        mesh.push_back(polyLPtr);                                                                   \
 }
 
-MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PBCoord, coordIndex);
-MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PBNorml, normalIndex);
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MBCoord, coordIndex);
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MBNorml, normalIndex);

@@ -15,6 +15,9 @@
 #include <list>
 #include "matrix.h"
 
+class CoordTransformer;
+class NormalTransformer;
+
 // pure abstract base class for invertible transforms
 class Transform;
 
@@ -23,6 +26,18 @@ class ComboTransform;
 class Translation;
 class Rotation;
 class ScaleFactor;
+
+class CoordTransformer {
+public:
+    virtual ~CoordTransformer() {}
+    virtual Mat44 to_left_matrix() const = 0;
+};
+
+class NormalTransformer {
+public:
+    virtual ~NormalTransformer() {}
+    virtual Mat33 to_right_matrix() const = 0;
+};
 
 class Transform : public CoordTransformer, public NormalTransformer {
 public:

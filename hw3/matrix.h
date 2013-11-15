@@ -26,18 +26,6 @@ typedef Matrix<double,4,1> Vec4;
 typedef Matrix<double,1,3> NVec3;
 typedef Matrix<int,2,1> IntVec2;
 
-class CoordTransformer {
-public:
-    virtual ~CoordTransformer() {}
-    virtual Mat44 to_left_matrix() const = 0;
-};
-
-class NormalTransformer {
-public:
-    virtual ~NormalTransformer() {}
-    virtual Mat33 to_right_matrix() const = 0;
-};
-
 class MatrixException { public: virtual ~MatrixException() {} };
 
 // call when, for example, trying to invert a non-square matrix

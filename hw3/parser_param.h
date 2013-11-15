@@ -23,7 +23,7 @@ public:
     // true if some parameters are missing
     virtual bool incomplete_param() const = 0;
     // hint what are missing
-    virtual const char* incomplete_param_msg() const = 0;
+    virtual std::string incomplete_param_msg() const = 0;
     // "new" an object from stored parameters and return its pointer
     virtual T* make_object() const = 0;
 };
@@ -45,7 +45,7 @@ public:
 
     virtual bool incomplete_param() const { return !pCamPtr; }
 
-    virtual const char* incomplete_param_msg() const {
+    virtual std::string incomplete_param_msg() const {
         if (incomplete_param())
             return "No PerspectiveCamera";
         else
@@ -84,7 +84,7 @@ public:
 
     virtual bool incomplete_param() const { return false; }
 
-    virtual const char* incomplete_param_msg() const { return ""; }
+    virtual std::string incomplete_param_msg() const { return ""; }
 
     virtual PointLight* make_object() const {
         const Vec3& locV = (location) ? (*location) : defLocation;
@@ -107,14 +107,14 @@ public:
         return !(mPtr && cPtr && nPtr && iPtr);
     }
 
-    virtual const char* incomplete_param_msg() const {
+    virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
         std::string s = "No ";
         if (!mPtr) s += "Material ";
         if (!cPtr) s += "Coordinate3 ";
         if (!nPtr) s += "Normal ";
         if (!iPtr) s += "IndexedFaceSet ";
-        return s.c_str();
+        return s;
     }
 
     virtual Separator* make_object() const {
@@ -151,7 +151,7 @@ public:
 
     virtual bool incomplete_param() const { return !(pos && orient && n && f && l && r && t && b); }
 
-    virtual const char* incomplete_param_msg() const {
+    virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
         std::string s = "No ";
         if (!pos) s += "position ";
@@ -162,7 +162,7 @@ public:
         if (!r) s += "right ";
         if (!t) s += "top ";
         if (!b) s += "bottom ";
-        return s.c_str();
+        return s;
     }
 
     virtual PerspectiveCamera* make_object() const {
@@ -191,7 +191,7 @@ public:
 
     virtual bool incomplete_param() const { return false; }
 
-    virtual const char* incomplete_param_msg() const { return ""; }
+    virtual std::string incomplete_param_msg() const { return ""; }
 
     virtual ComboTransform* make_object() const {
         ComboTransform *tr = new ComboTransform();
@@ -219,7 +219,7 @@ public:
 
     virtual bool incomplete_param() const { return false; }
 
-    virtual const char* incomplete_param_msg() const { return ""; }
+    virtual std::string incomplete_param_msg() const { return ""; }
 
     virtual ComboTransform* make_object() const {
         ComboTransform *tr = new ComboTransform();
@@ -256,7 +256,7 @@ public:
 
     virtual bool incomplete_param() const { return false; }
 
-    virtual const char* incomplete_param_msg() const { return ""; }
+    virtual std::string incomplete_param_msg() const { return ""; }
 
     virtual Material* make_object() const {
         Vec3 ac = (aColor) ? (*aColor) : defAColor;
@@ -287,12 +287,12 @@ public:
 
     virtual bool incomplete_param() const { return !(coordIndex && normalIndex); }
 
-    virtual const char* incomplete_param_msg() const {
+    virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
         std::string s = "No ";
         if (!coordIndex) s += "coordIndex ";
         if (!normalIndex) s += "normalIndex ";
-        return s.c_str();
+        return s;
     }
 
     virtual IndexedFaceSet* make_object() const {

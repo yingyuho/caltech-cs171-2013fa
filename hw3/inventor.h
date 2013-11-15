@@ -12,15 +12,16 @@
 
 #include <list>
 #include <vector>
+#include "mesh_processor.h"
 #include "transform.h"
 
 namespace InventorHelper {
     // helper function for deleting all pointers in a STL container
     template<typename T> static bool deleteAllPtr(T* elemPtr) { delete elemPtr; return true; }
     // debug message
-    //template<typename T> static void watch(T) {}
+    // template<typename T> static void watch(T) {}
+    template<typename T> static void watch(const T t) { std::cout << t << " "; }
     static void watch(const char *s) { std::cout << s; }
-    static void watch(const int i) { std::cout << i << " "; }
 }
 
 // A subclass of this takes any number of parameters of type T
@@ -28,15 +29,7 @@ namespace InventorHelper {
 //       if input data is NOT copied, use non-const pointer for T
 template< typename T > class ParamEater;
 
-// A subclass of this accept the reference of a list of polygons with coordinate type T
-// and put more polygons into the list according to the data with type U.
-// Usually the data is a std::vector<T> containing all vertex coordinates
-template< typename T, typename U = std::vector<T> > class PolygonBuilder;
-typedef PolygonBuilder<Vec4> PBCoord;
-typedef PolygonBuilder<NVec3> PBNorml;
-
-// A specialization of PolygonBuilder that only need the reference of a polygon list
-template< typename T > class PolygonBuilder<T,void>;
+template< typename T > class MeshBuilder;
 
 class Inventor; // PerspectiveCamera (PointLight)+ (Separator)+
 class PerspectiveCamera;
@@ -46,7 +39,6 @@ class Material;
 class Coordinate3;
 class Normal3;
 class IndexedFaceSet;
-//class IndexedFaceLine;
 
 template< typename T >
 class ParamEater {
@@ -55,38 +47,13 @@ public:
     virtual void feed_param(T) = 0;
 };
 
-template< typename T, typename U >
-class PolygonBuilder {
-public:
-    typedef T VertexType;
-    typedef typename std::list<T> VertexList;
-    typedef typename VertexList::iterator VertexIter;
-    typedef typename VertexList::const_iterator VertexCIter;
-    typedef typename std::list<VertexList*> PolygonList;
-    typedef typename PolygonList::iterator PolygonIter;
-    typedef typename PolygonList::const_iterator PolygonCIter;
-    typedef U PointMap;
-
-    virtual ~PolygonBuilder() {}
-    virtual void build_polygon_list(PolygonList& pList, const U& pMap) const = 0;
-};
-
 template< typename T >
-class PolygonBuilder<T,void> {
-public:
-    typedef T VertexType;
-    typedef typename std::list<T> VertexList;
-    typedef typename VertexList::iterator VertexIter;
-    typedef typename VertexList::const_iterator VertexCIter;
-    typedef typename std::list<VertexList*> PolygonList;
-    typedef typename PolygonList::iterator PolygonIter;
-    typedef typename PolygonList::const_iterator PolygonCIter;
+class MeshBuilder : public MeshProcessor< T, const std::vector<T>& > {};
 
-    virtual ~PolygonBuilder() {}
-    virtual void build_polygon_list(PolygonList& pList) const = 0;
-};
+typedef MeshBuilder<Vec4> MBCoord;
+typedef MeshBuilder<NVec3> MBNorml;
 
-class Inventor : public PolygonBuilder<Vec4,void>, public PolygonBuilder<NVec3,void>\
+class Inventor : public MeshProcessor<Vec4,void>, public MeshProcessor<NVec3,void>\
 , public ParamEater<PointLight*>, public ParamEater<Separator*> {
 private:
     PerspectiveCamera* pCamera;
@@ -97,8 +64,14 @@ public:
     virtual ~Inventor();
     virtual void feed_param(PointLight* pl) { plList.push_back(pl); }
     virtual void feed_param(Separator* sep) { sepList.push_back(sep); }
-    virtual void build_polygon_list(PBCoord::PolygonList& pList) const;
-    virtual void build_polygon_list(PBNorml::PolygonList& pList) const;
+    virtual void process_mesh(MBCoord::Mesh& mesh) const;
+    virtual void process_mesh(MBNorml::Mesh& mesh) const;
+
+    const std::list<Separator*>& get_separator_list() const { return sepList; }
+
+    // returns true if coordIndex and normalIndex are consistent for each separator
+    bool validate_index() const;
+    const std::string validate_index_msg() const;
 };
 
 class PerspectiveCamera : public CoordTransformer {
@@ -122,7 +95,7 @@ public:
     PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
 };
 
-class Separator : public PBCoord, public PBNorml, public CoordTransformer {
+class Separator : public MBCoord, public MBNorml, public CoordTransformer {
 private:
     ComboTransform * tPtr;
     Material * mPtr;
@@ -136,15 +109,23 @@ public:
     ~Separator();
 
     virtual Mat44 to_left_matrix() const { return tPtr->to_left_matrix(); }
-    virtual void build_polygon_list(PBCoord::PolygonList& pList, const PBCoord::PointMap& pMap) const;
-    virtual void build_polygon_list(PBNorml::PolygonList& pList, const PBNorml::PointMap& pMap) const;
+    virtual void process_mesh(MBCoord::Mesh& mesh, const MBCoord::PointMap& pMap) const;
+    virtual void process_mesh(MBNorml::Mesh& mesh, const MBNorml::PointMap& pMap) const;
 
     const std::vector<Vec4>& get_obj_space_coord() const;
     const std::vector<Vec4> get_world_space_coord() const;
     const std::vector<Vec4> get_norm_device_coord(const Mat44& pcMatrix) const;
     const std::vector<IntVec2> get_pixel_coord(const Mat44& pcMatrix, int xRes, int yRes) const;
+
     const std::vector<NVec3>& get_obj_space_normal() const;
     const std::vector<NVec3> get_world_space_normal() const;
+
+    const std::vector<int>& get_coord_index() const;
+    const std::vector<int>& get_normal_index() const;
+
+    // returns true if get_coord_index() and get_normal_index() are consistent
+    bool validate_index() const;
+    const std::string validate_index_msg() const;
 };
 
 class Material {
@@ -186,7 +167,7 @@ public:
     const std::vector<NVec3>& get_obj_space_normal() const { return normalVec; }
 };
 
-class IndexedFaceSet : public PBCoord, public PBNorml {
+class IndexedFaceSet : public MBCoord, public MBNorml {
 private:
     std::vector<int> * coordIndex;
     std::vector<int> * normalIndex;
@@ -195,8 +176,12 @@ public:
     : coordIndex(coordIndex), normalIndex(normalIndex) {}
 
     virtual ~IndexedFaceSet();
-    virtual void build_polygon_list(PBCoord::PolygonList& pList, const PBCoord::PointMap& pMap) const;
-    virtual void build_polygon_list(PBNorml::PolygonList& pList, const PBNorml::PointMap& pMap) const;
+    virtual void process_mesh(MBCoord::Mesh& mesh, const MBCoord::PointMap& pMap) const;
+    virtual void process_mesh(MBNorml::Mesh& mesh, const MBNorml::PointMap& pMap) const;
+
+    const std::vector<int>& get_coord_index() const { return *coordIndex; }
+    const std::vector<int>& get_normal_index() const { return *normalIndex; }
 };
+
 
 #endif //   _inventor_h
