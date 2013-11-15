@@ -7,16 +7,29 @@ Inventor::~Inventor() {
     sepList.remove_if(InventorHelper::deleteAllPtr<Separator>);
 }
 
-void Inventor::build_polygon_list(PolygonList& pList) const {
+void Inventor::build_polygon_list(PBCoord::PolygonList& pList) const {
     InventorHelper::watch("Inventor::build_polygon_list()\n");
     // for each separator
     for ( std::list<Separator*>::const_iterator it = sepList.begin();\
         it != sepList.end(); it++ ) {
-        // get NDCs from the separator
-        std::vector<Vec4> ndc = \
-            (*it)->get_norm_device_coord(pCamera->to_left_matrix());
+        // get world space coordinates from the separator
+        std::vector<Vec4> wsc = \
+            (*it)->get_world_space_coord();
         // and use them to retrieve polygons from the separator
-        (*it)->build_polygon_list(pList, ndc);
+        (*it)->build_polygon_list(pList, wsc);
+    }
+}
+
+void Inventor::build_polygon_list(PBNorml::PolygonList& pList) const {
+    InventorHelper::watch("Inventor::build_polygon_list()\n");
+    // for each separator
+    for ( std::list<Separator*>::const_iterator it = sepList.begin();\
+        it != sepList.end(); it++ ) {
+        // get world space coordinates from the separator
+        std::vector<NVec3> wsn = \
+            (*it)->get_world_space_normal();
+        // and use them to retrieve polygons from the separator
+        (*it)->build_polygon_list(pList, wsn);
     }
 }
 
@@ -42,14 +55,33 @@ Separator::~Separator() {
     if (ifsPtr) delete ifsPtr;
 }
 
-void Separator::build_polygon_list(PolygonList& pList, const PointMap& pMap) const {
-    InventorHelper::watch("Separator::build_polygon_list()\n");
-    // retrieve polygons from each indexedFaceSet
-    ifsPtr->build_polygon_list(pList, pMap);
+#define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PB)                                                  \
+void Separator::build_polygon_list(PB::PolygonList& pList, const PB::PointMap& pMap) const {    \
+    InventorHelper::watch("Separator::build_polygon_list()\n");                                 \
+    /* retrieve polygons from each indexedFaceSet */                                            \
+    ifsPtr->build_polygon_list(pList, pMap);                                                    \
 }
+
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PBCoord);
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(PBNorml);
 
 const std::vector<Vec4>& Separator::get_obj_space_coord() const {
     return coord3Ptr->get_obj_space_coord();
+}
+
+const std::vector<Vec4> Separator::get_world_space_coord() const {
+    const std::vector<Vec4>& osc = get_obj_space_coord();
+    std::vector<Vec4> wsc(osc.size());
+
+    // v_wsc = O * v_osc
+    // O = object transforms = tPtr->to_left_matrix()
+    Mat44 mat = tPtr->to_left_matrix();
+
+    // std::vector<Vec4> osc => std::vector<Vec4> wsc
+    for ( int i = 0; i < osc.size(); i++ )
+        wsc[i] = mat * osc[i];
+
+    return wsc;
 }
 
 const std::vector<Vec4> Separator::get_norm_device_coord(const Mat44& pcMatrix) const {
@@ -89,6 +121,25 @@ const std::vector<IntVec2> Separator::get_pixel_coord(const Mat44& pcMatrix\
     return pc;
 }
 
+const std::vector<NVec3>& Separator::get_obj_space_normal() const {
+    return normalPtr->get_obj_space_normal();
+}
+
+const std::vector<NVec3> Separator::get_world_space_normal() const {
+    const std::vector<NVec3>& osn = get_obj_space_normal();
+    std::vector<NVec3> wsn(osn.size());
+
+    // v_wsc = v_osc * O^(-1)
+    // O^(-1) = inverse object transforms = tPtr->to_right_matrix()
+    Mat33 mat = tPtr->to_right_matrix();
+
+    // std::vector<Vec4> osc => std::vector<Vec4> wsc
+    for ( int i = 0; i < osn.size(); i++ )
+        wsn[i] = osn[i] * mat;
+
+    return wsn;
+}
+
 // IndexedFaceSet
 
 IndexedFaceSet::~IndexedFaceSet() {
@@ -97,59 +148,32 @@ IndexedFaceSet::~IndexedFaceSet() {
     if (normalIndex) delete normalIndex;
 }
 
-void IndexedFaceSet::build_polygon_list(PolygonList& pList, const PointMap& pMap) const {
-    InventorHelper::watch("IndexedFaceSet::build_polygon_list()\n");
-
-    std::list<VertexType>* polyLPtr = new std::list<VertexType>();
-
-    for ( std::vector<int>::const_iterator it = coordIndex->begin()\
-        ; it != coordIndex->end(); it++ ) {
-
-        InventorHelper::watch(*it);
-        if ( *it == -1 ) {
-            // push polygon
-            pList.push_back(polyLPtr);
-            // create an empty polygon
-            polyLPtr = new std::list<VertexType>();
-        } else {
-            // add a vertex to polygon
-            polyLPtr->push_back(pMap[*it]);
-        }
-    }
-
-    if ( polyLPtr->empty() )
-        // delete empty polygon
-        delete polyLPtr;
-    else
-        // push non-empty polygon
-        pList.push_back(polyLPtr);
+#define MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PB, indVal)                                              \
+void IndexedFaceSet::build_polygon_list(PB::PolygonList& pList, const PB::PointMap& pMap) const {   \
+    InventorHelper::watch("IndexedFaceSet::build_polygon_list()\n");                                \
+                                                                                                    \
+    PB::VertexList * polyLPtr = new PB::VertexList();                                               \
+                                                                                                    \
+    for ( std::vector<int>::const_iterator it = indVal->begin(); it != indVal->end(); it++ ) {      \
+        InventorHelper::watch(*it);                                                                 \
+        if ( *it == -1 ) {                                                                          \
+            /* push polygon */                                                                      \
+            pList.push_back(polyLPtr);                                                              \
+            /* create an empty polygon */                                                           \
+            polyLPtr = new PB::VertexList();                                                        \
+        } else {                                                                                    \
+            /* add a vertex to polygon */                                                           \
+            polyLPtr->push_back(pMap[*it]);                                                         \
+        }                                                                                           \
+    }                                                                                               \
+                                                                                                    \
+    if ( polyLPtr->empty() )                                                                        \
+        /* delete empty polygon */                                                                  \
+        delete polyLPtr;                                                                            \
+    else                                                                                            \
+        /* push non-empty polygon */                                                                \
+        pList.push_back(polyLPtr);                                                                  \
 }
 
-/*// IndexedFaceLine
-
-void IndexedFaceLine::build_polygon_list(PolygonList& pList, const PointMap& pMap) const {
-    InventorHelper::watch("IndexedFaceLine::build_polygon_list()\n");
-
-    std::list<VertexType>* polyLPtr = new std::list<VertexType>();
-
-    for ( std::vector<int>::const_iterator it = indexVec.begin(); it != indexVec.end(); it++ ) {
-        InventorHelper::watch(*it);
-        if ( *it == -1 ) {
-            // push polygon
-            pList.push_back(polyLPtr);
-            // create an empty polygon
-            polyLPtr = new std::list<VertexType>();
-        } else {
-            // add a vertex to polygon
-            polyLPtr->push_back(pMap[*it]);
-        }
-    }
-    InventorHelper::watch("\n");
-
-    if ( polyLPtr->empty() )
-        // delete empty polygon
-        delete polyLPtr;
-    else
-        // push non-empty polygon
-        pList.push_back(polyLPtr);
-}*/
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PBCoord, coordIndex);
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(PBNorml, normalIndex);

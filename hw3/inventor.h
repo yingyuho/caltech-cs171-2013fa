@@ -32,6 +32,8 @@ template< typename T > class ParamEater;
 // and put more polygons into the list according to the data with type U.
 // Usually the data is a std::vector<T> containing all vertex coordinates
 template< typename T, typename U = std::vector<T> > class PolygonBuilder;
+typedef PolygonBuilder<Vec4> PBCoord;
+typedef PolygonBuilder<NVec3> PBNorml;
 
 // A specialization of PolygonBuilder that only need the reference of a polygon list
 template< typename T > class PolygonBuilder<T,void>;
@@ -84,7 +86,7 @@ public:
     virtual void build_polygon_list(PolygonList& pList) const = 0;
 };
 
-class Inventor : public PolygonBuilder<Vec4,void>\
+class Inventor : public PolygonBuilder<Vec4,void>, public PolygonBuilder<NVec3,void>\
 , public ParamEater<PointLight*>, public ParamEater<Separator*> {
 private:
     PerspectiveCamera* pCamera;
@@ -95,7 +97,8 @@ public:
     virtual ~Inventor();
     virtual void feed_param(PointLight* pl) { plList.push_back(pl); }
     virtual void feed_param(Separator* sep) { sepList.push_back(sep); }
-    virtual void build_polygon_list(PolygonList& pList) const;
+    virtual void build_polygon_list(PBCoord::PolygonList& pList) const;
+    virtual void build_polygon_list(PBNorml::PolygonList& pList) const;
 };
 
 class PerspectiveCamera : public CoordTransformer {
@@ -119,7 +122,7 @@ public:
     PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
 };
 
-class Separator : public PolygonBuilder<Vec4>, public CoordTransformer {
+class Separator : public PBCoord, public PBNorml, public CoordTransformer {
 private:
     ComboTransform * tPtr;
     Material * mPtr;
@@ -133,11 +136,15 @@ public:
     ~Separator();
 
     virtual Mat44 to_left_matrix() const { return tPtr->to_left_matrix(); }
-    virtual void build_polygon_list(PolygonList& pList, const PointMap& pMap) const;
+    virtual void build_polygon_list(PBCoord::PolygonList& pList, const PBCoord::PointMap& pMap) const;
+    virtual void build_polygon_list(PBNorml::PolygonList& pList, const PBNorml::PointMap& pMap) const;
 
     const std::vector<Vec4>& get_obj_space_coord() const;
+    const std::vector<Vec4> get_world_space_coord() const;
     const std::vector<Vec4> get_norm_device_coord(const Mat44& pcMatrix) const;
     const std::vector<IntVec2> get_pixel_coord(const Mat44& pcMatrix, int xRes, int yRes) const;
+    const std::vector<NVec3>& get_obj_space_normal() const;
+    const std::vector<NVec3> get_world_space_normal() const;
 };
 
 class Material {
@@ -176,10 +183,10 @@ public:
         normalVec.push_back(v.transpose());
     }
 
-    const std::vector<NVec3>& get_obj_space_coord() const { return normalVec; }
+    const std::vector<NVec3>& get_obj_space_normal() const { return normalVec; }
 };
 
-class IndexedFaceSet : public PolygonBuilder<Vec4> {
+class IndexedFaceSet : public PBCoord, public PBNorml {
 private:
     std::vector<int> * coordIndex;
     std::vector<int> * normalIndex;
@@ -188,7 +195,8 @@ public:
     : coordIndex(coordIndex), normalIndex(normalIndex) {}
 
     virtual ~IndexedFaceSet();
-    virtual void build_polygon_list(PolygonList& pList, const PointMap& pMap) const;
+    virtual void build_polygon_list(PBCoord::PolygonList& pList, const PBCoord::PointMap& pMap) const;
+    virtual void build_polygon_list(PBNorml::PolygonList& pList, const PBNorml::PointMap& pMap) const;
 };
 
 #endif //   _inventor_h

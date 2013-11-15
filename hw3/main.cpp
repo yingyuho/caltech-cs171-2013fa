@@ -38,9 +38,8 @@ int main(int argc, char* argv[])
     if ( !inv ) { cerr << "Inventor object is not made." << endl; return 1; }
 
     // retrieve list of polygons (in pixel coordinates) from inventor object
-    typedef PolygonBuilder<Inventor::VertexType> PB;
     //PB::VertexType resVec(res);
-    PB::PolygonList plList;
+    PBCoord::PolygonList plList;
     inv->build_polygon_list( plList );
 
 
