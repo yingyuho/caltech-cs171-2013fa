@@ -1,7 +1,7 @@
 PRG = shaded
 LEXER = inventor
 PARSER = inventor
-OBJECTS = $(PARSER).tab.o $(LEXER).yy.o main.o inventor.o transform.o
+OBJECTS = $(PARSER).tab.o $(LEXER).yy.o main.o inventor.o transform.o mesh.o
 SOURCES = *.cpp *.h
 
 CC = g++
@@ -29,13 +29,10 @@ $(PARSER).tab.o: $(PARSER).tab.cpp inventor.o parser_param.tag
 $(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.o parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-mesh.tag: mesh.h mesh.cpp face.h transform.o ptr_container.h
-	echo > mesh.tag
-
-mesh_processor.tag: mesh_processor.h mesh.tag
+mesh_processor.tag: mesh_processor.h mesh.o
 	echo > mesh_processor.tag
 
-mesh_utility.tag: mesh_utility.h mesh.tag
+mesh_utility.tag: mesh_utility.h mesh.o
 	echo > mesh_utility.tag
 
 parser_param.tag: parser_param.h inventor.o
@@ -44,7 +41,10 @@ parser_param.tag: parser_param.h inventor.o
 canvas.tag: canvas.h canvas.cpp
 	echo > canvas.tag
 
-main.o: main.cpp inventor.o canvas.tag mesh.tag mesh_utility.tag ptr_container.h
+mesh.o: mesh.cpp mesh.h face.h transform.o ptr_container.h
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+main.o: main.cpp inventor.o canvas.tag mesh.o mesh_utility.tag ptr_container.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 inventor.o: inventor.cpp inventor.h transform.o mesh_processor.tag ptr_container.h

@@ -49,13 +49,16 @@ int main(int argc, char* argv[])
 
     // retrieve list of polygons (in pixel coordinates) from inventor object
     //PB::VertexType resVec(res);
-    Mesh<Vec4> cList;
-    Mesh<NVec3> nList;
-    inv->process_mesh(cList);
-    inv->process_mesh(nList);
+    CoordMesh coord_ws;
+    Mesh<NVec3> normal_ws;
+    inv->process_mesh(coord_ws);
+    inv->process_mesh(normal_ws);
 
-    cList.triangulate();
-    nList.triangulate();
+    coord_ws.triangulate();
+    normal_ws.triangulate();
+
+    CoordMesh coord_nd(coord_ws);
+    coord_nd.transform(inv->get_camera());
 
 
     /*for ( PB::MeshCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {

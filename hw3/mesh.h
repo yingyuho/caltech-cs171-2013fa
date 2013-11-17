@@ -28,7 +28,7 @@ public:
 
     Mesh() {}
     Mesh(const Mesh& x) : PtrList< Face<T> >(x) {};
-
+    Mesh& operator= (const Mesh& x) { PtrList< Face<T> >::operator=(x); }
     virtual ~Mesh() {};
 
     bool triangulated() const;
@@ -36,6 +36,7 @@ public:
 };
 
 class CoordMesh : public Mesh<Vec4> {
+public:
     CoordMesh() {}
     CoordMesh(const CoordMesh& mesh) : Mesh(mesh) {}
     virtual ~CoordMesh() {}
