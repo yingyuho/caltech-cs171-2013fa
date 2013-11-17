@@ -57,7 +57,7 @@ void BackFaceCuller::operator() (Mesh<T>& mesh) const {
     mesh.triangulate();
 
     int i = 0;
-    Mesh<Vec4>::Iter mit = mesh.begin();
+    typename Mesh<T>::Iter mit = mesh.begin();
     std::vector<int>::const_iterator iit = backFaceIndex.begin();
 
     while ( mit != mesh.end() ) {

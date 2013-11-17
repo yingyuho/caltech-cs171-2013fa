@@ -10,6 +10,7 @@
 #ifndef _mesh_h
 #define _mesh_h
 
+#include <iostream>
 #include "ptr_container.h"
 #include "transform.h"
 #include "face.h"
@@ -18,6 +19,7 @@ template< typename T >
 class Mesh;
 
 class CoordMesh;
+class PixelMesh;
 
 template< typename T >
 class Mesh : public PtrList< Face<T> > {
@@ -41,6 +43,16 @@ public:
     CoordMesh(const CoordMesh& mesh) : Mesh(mesh) {}
     virtual ~CoordMesh() {}
     void transform(const CoordTransformer&);
+};
+
+class PixelMesh : public Mesh<IntVec2> {
+public:
+    const int xRes;
+    const int yRes;
+    PixelMesh(int xRes, int yRes) : xRes(xRes), yRes(yRes) {}
+    PixelMesh(const PixelMesh& m) : Mesh(m), xRes(m.xRes), yRes(m.yRes) {}
+    PixelMesh(const CoordMesh&, int, int);
+    virtual ~PixelMesh() {}
 };
 
 // Mesh
@@ -84,24 +96,36 @@ void Mesh<T>::triangulate() {
             continue;
         }
 
-        typename Face<T>::CIter it1 = polygon->begin()++;
-        typename Face<T>::CIter it2 = polygon->begin()++++;
+        typename Face<T>::CIter it0 = polygon->begin();
+        typename Face<T>::CIter it1 = polygon->begin(); it1++;
 
         for ( int j = 0; j < V-2; j++ ) {
             Face<T> * triangle = new Face<T>();
 
-            triangle->push_back(polygon->front());
+            triangle->push_back(*it0);
+            triangle->push_back(*it1); it1++;
             triangle->push_back(*it1);
-            triangle->push_back(*it2);
 
             this->push_back(triangle);
-
-            it1++; it2++;
         }
 
         delete polygon;
         this->pop_front();
     }
+}
+
+// operator<< (std::ostream, const Mesh<T>)
+
+template< typename T >
+std::ostream& operator<<(std::ostream &os, const Mesh<T> &m) {
+    os << "Mesh = {" << std::endl;
+    int i = 0;
+    for ( typename Mesh<T>::CIter it = m.begin(); it != m.end(); it++ ) {
+        if ( it != m.begin() ) { os << "," << std::endl; }
+        os << "Face " << i++ << " = " << std::endl << (**it); 
+    }
+    os << "}" << std::endl;
+    return os;
 }
 
 #endif //   _mesh_h

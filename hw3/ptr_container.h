@@ -41,8 +41,8 @@ public:
 // PtrList
 
 template< typename T >
-PtrList<T>::PtrList(const PtrList& x) {
-	std::transform(x.cbegin(), x.cend(), this->begin(), clone);
+PtrList<T>::PtrList(const PtrList& x) : std::list<T*>(x) {
+	std::transform(this->cbegin(), this->cend(), this->begin(), clone);
 }
 
 template< typename T >

@@ -11,6 +11,7 @@
 #define _face_h
 
 #include <list>
+#include "matrix.h"
 
 template< typename T >
 class Face : public std::list<T> {
@@ -25,5 +26,18 @@ public:
     }
     virtual ~Face() {}
 };
+
+template< typename T >
+std::ostream& operator<<(std::ostream &os, const Face<T> &m) {
+    for ( typename Face<T>::CIter it = m.begin(); it != m.end(); it++ )
+        os << *it;
+    return os;
+}
+
+template<>
+std::ostream& operator<<(std::ostream &os, const Face<Vec4> &m);
+
+template<>
+std::ostream& operator<<(std::ostream &os, const Face<IntVec2> &m);
 
 #endif //   _face_h

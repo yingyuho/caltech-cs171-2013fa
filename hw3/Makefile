@@ -1,7 +1,7 @@
 PRG = shaded
 LEXER = inventor
 PARSER = inventor
-OBJECTS = $(PARSER).tab.o $(LEXER).yy.o main.o inventor.o transform.o mesh.o
+OBJECTS = $(PARSER).tab.o $(LEXER).yy.o main.o inventor.o transform.o face.o mesh.o
 SOURCES = *.cpp *.h
 
 CC = g++
@@ -23,37 +23,49 @@ $(PARSER).tab.cpp $(PARSER).tab.hpp: $(PARSER).ypp
 $(LEXER).yy.cpp: $(LEXER).lex
 	flex -+ -o $(LEXER).yy.cpp $(LEXER).lex
 
-$(PARSER).tab.o: $(PARSER).tab.cpp inventor.o parser_param.tag
+$(PARSER).tab.o: $(PARSER).tab.cpp inventor.tag parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.o parser_param.tag
+$(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.tag parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-mesh_processor.tag: mesh_processor.h mesh.o
+mesh_processor.tag: mesh_processor.h mesh.tag
 	echo > mesh_processor.tag
 
-mesh_utility.tag: mesh_utility.h mesh.o
+mesh_utility.tag: mesh_utility.h mesh.tag
 	echo > mesh_utility.tag
 
-parser_param.tag: parser_param.h inventor.o
+parser_param.tag: parser_param.h inventor.tag
 	echo > parser_param.tag
 
 canvas.tag: canvas.h canvas.cpp
 	echo > canvas.tag
 
-mesh.o: mesh.cpp mesh.h face.h transform.o ptr_container.h
+face.tag: face.h matrix.h
+	echo > face.tag
+
+mesh.tag: mesh.h face.tag transform.tag ptr_container.h
+	echo > mesh.tag
+
+transform.tag: transform.h matrix.h ptr_container.h
+	echo > transform.tag
+
+inventor.tag: inventor.h inventor.h transform.tag mesh_processor.tag ptr_container.h
+	echo > inventor.tag
+
+face.o: face.cpp face.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-main.o: main.cpp inventor.o canvas.tag mesh.o mesh_utility.tag ptr_container.h
+mesh.o: mesh.cpp mesh.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-inventor.o: inventor.cpp inventor.h transform.o mesh_processor.tag ptr_container.h
+main.o: main.cpp inventor.tag canvas.tag mesh.tag mesh_utility.tag ptr_container.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-#parser_param.o: parser_param.cpp parser_param.h inventor.o
-#	$(CC) -c $(CFLAGS) -o $@ $<
+inventor.o: inventor.cpp inventor.tag
+	$(CC) -c $(CFLAGS) -o $@ $<
 
-transform.o: transform.cpp transform.h matrix.h ptr_container.h
+transform.o: transform.cpp transform.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 #.cpp.o: $(HEADERS)

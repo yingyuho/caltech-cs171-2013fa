@@ -35,8 +35,6 @@ int main(int argc, char* argv[])
     // parse inventer commands from stdin
     Inventor * inv = parse_inventor(cin);
 
-    // cout << "inv = " << inv << endl;
-
     // make sure the parser doesn't return a null pointer
     if ( !inv ) { cerr << "Inventor object is not made." << endl; return 1; }
 
@@ -56,25 +54,28 @@ int main(int argc, char* argv[])
 
     coord_ws.triangulate();
     normal_ws.triangulate();
-
     CoordMesh coord_nd(coord_ws);
     coord_nd.transform(inv->get_camera());
 
+    BackFaceCuller bfc(coord_nd);
+    PixelMesh pxMesh(coord_nd, res[0], res[1]);
 
-    /*for ( PB::MeshCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {
+    //bfc(pxMesh);
+
+    for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
         // ignore "faces" with only zero or one vertex
         if ( (*it1)->size() < 2 ) { continue; }
 
         // connect p(i) and p(i+1)
-        PB::FaceCIter it2_1 = (*it1)->begin();
-        for ( PB::FaceCIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
+        Face<IntVec2>::CIter it2_1 = (*it1)->begin();
+        for ( Face<IntVec2>::CIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
             canvas->draw_line(*it2_1,*it2_2);
             it2_1 = it2_2;
         }
 
         // close the polygon by connecting p(n) and p(1)
         canvas->draw_line(*it2_1,(*it1)->front());
-    }*/
+    }
 
     // send ppm image to stdout
     canvas->print_ppm(cout);
