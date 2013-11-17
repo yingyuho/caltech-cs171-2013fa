@@ -59,6 +59,7 @@ private:
 
 public:
     Translation(double x, double y, double z) : x(x), y(y), z(z) {}
+    Translation(const Translation& t) : x(t.x), y(t.y), z(t.z) {}
     Translation(const Vec3 v) : x(v[0]), y(v[1]), z(v[2]) {}
 
     virtual Mat44 to_left_matrix() const {
@@ -74,7 +75,7 @@ public:
     }
 
     virtual Transform* inverse() const { return new Translation(-x, -y, -z); }
-    virtual Transform* clone() const { return new Translation(x, y, z); }
+    virtual Transform* clone() const { return new Translation(*this); }
 };
 
 class Rotation : public Transform {
@@ -93,6 +94,7 @@ private:
 
 public:
     Rotation(double x, double y, double z, double th) : axis(unit_vec(x,y,z)), th(th) {}
+    Rotation(const Rotation& t) : axis(t.axis), th(t.th) {}
     Rotation(const Vec4 &v) : axis(unit_vec(v[0],v[1],v[2])), th(v[3]) {}
     Rotation(const Vec3 &v, double th) : axis(v.normalize()), th(th) {}
 
@@ -126,7 +128,7 @@ public:
     }
 
     virtual Transform* inverse() const { return new Rotation(0, axis, -th); }
-    virtual Transform* clone() const { return new Rotation(0, axis, th); }
+    virtual Transform* clone() const { return new Rotation(*this); }
 };
 
 class ScaleFactor : public Transform {
@@ -137,6 +139,7 @@ private:
 
 public:
     ScaleFactor(double x, double y, double z) : x(x), y(y), z(z) {}
+    ScaleFactor(const ScaleFactor& t) : x(t.x), y(t.y), z(t.z) {}
     ScaleFactor(const Vec3 &v) : x(v[0]), y(v[1]), z(v[2]) {}
 
     virtual Mat44 to_left_matrix() const {
@@ -160,21 +163,23 @@ public:
         return new ScaleFactor(1/x,1/y,1/z);
     }
 
-    virtual Transform* clone() const { return new ScaleFactor(x,y,z); }
+    virtual Transform* clone() const { return new ScaleFactor(*this); }
 };
 
 class ComboTransform : public Transform {
 private:
     typedef PtrList<Transform> TList;
     TList tList;
+    void append(const TList* tList2) {
+        for (TList::const_iterator it = tList2->begin(); it != tList2->end(); it++)
+            tList.push_back((*it)->clone());
+    }
 
 public:
     ComboTransform() {}
-
-    ComboTransform(const TList *tPtrList2) {
-        for (TList::const_iterator it = tPtrList2->begin(); it != tPtrList2->end(); it++)
-            tList.push_back((*it)->clone());
-    }
+    ComboTransform(const TList& tList2) { append(&tList2); }
+    ComboTransform(const TList* tList2) { append(tList2); }
+    ComboTransform(const ComboTransform& t) { append(&(t.tList)); }
 
     ComboTransform& push_right(const Transform *t) {
         tList.push_back(t->clone());
@@ -215,7 +220,7 @@ public:
     }
 
     virtual Transform* clone() const {
-        return new ComboTransform(&tList);
+        return new ComboTransform(*this);
     }
 };
 
