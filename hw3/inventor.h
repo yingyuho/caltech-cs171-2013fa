@@ -13,11 +13,10 @@
 #include <list>
 #include <vector>
 #include "mesh_processor.h"
+#include "ptr_container.h"
 #include "transform.h"
 
 namespace InventorHelper {
-    // helper function for deleting all pointers in a STL container
-    template<typename T> static bool deleteAllPtr(T* elemPtr) { delete elemPtr; return true; }
     // debug message
     // template<typename T> static void watch(T) {}
     template<typename T> static void watch(const T t) { std::cout << t << " "; }
@@ -61,8 +60,8 @@ class Inventor \
 
 private:
     PerspectiveCamera* pCamera;
-    std::list<PointLight*> plList;
-    std::list<Separator*> sepList;
+    PtrList<PointLight> plList;
+    PtrList<Separator> sepList;
 public:
     Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}
     virtual ~Inventor();
@@ -71,7 +70,7 @@ public:
     virtual void process_mesh(Mesh<Vec4>& mesh) const;
     virtual void process_mesh(Mesh<NVec3>& mesh) const;
 
-    const std::list<Separator*>& get_separator_list() const { return sepList; }
+    const PtrList<Separator>& get_separator_list() const { return sepList; }
     const PerspectiveCamera& get_camera() const { return *pCamera; }
 
     // returns true if coordIndex and normalIndex are consistent for each separator

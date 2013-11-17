@@ -47,7 +47,7 @@ canvas.tag: canvas.h canvas.cpp
 main.o: main.cpp inventor.o canvas.tag mesh.tag mesh_utility.tag ptr_container.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-inventor.o: inventor.cpp inventor.h transform.o mesh_processor.tag
+inventor.o: inventor.cpp inventor.h transform.o mesh_processor.tag ptr_container.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 #parser_param.o: parser_param.cpp parser_param.h inventor.o

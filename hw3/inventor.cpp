@@ -4,13 +4,12 @@
 
 Inventor::~Inventor() {
     if (pCamera) delete pCamera;
-    sepList.remove_if(InventorHelper::deleteAllPtr<Separator>);
 }
 
 void Inventor::process_mesh(Mesh<Vec4>& mesh) const {
     InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
-    for ( std::list<Separator*>::const_iterator it = sepList.begin();\
+    for ( PtrList<Separator>::const_iterator it = sepList.begin();\
         it != sepList.end(); it++ ) {
         // get world space coordinates from the separator
         std::vector<Vec4> wsc = \
@@ -23,7 +22,7 @@ void Inventor::process_mesh(Mesh<Vec4>& mesh) const {
 void Inventor::process_mesh(Mesh<NVec3>& mesh) const {
     InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
-    for ( std::list<Separator*>::const_iterator it = sepList.begin();\
+    for ( PtrList<Separator>::const_iterator it = sepList.begin();\
         it != sepList.end(); it++ ) {
         // get world space coordinates from the separator
         std::vector<NVec3> wsn = \
@@ -37,7 +36,7 @@ void Inventor::process_mesh(Mesh<NVec3>& mesh) const {
 bool Inventor::validate_index() const {
     int v = 0;
     // for each separator
-    for ( std::list<Separator*>::const_iterator it = sepList.begin()\
+    for ( PtrList<Separator>::const_iterator it = sepList.begin()\
         ; it != sepList.end(); it++ ) { if ( ! (*it)->validate_index() ) return false; }
     return true;
 }
@@ -48,7 +47,7 @@ const std::string Inventor::validate_index_msg() const {
     char buffer [50];
 
     // for each separator
-    for ( std::list<Separator*>::const_iterator it = sepList.begin()\
+    for ( PtrList<Separator>::const_iterator it = sepList.begin()\
     ; it != sepList.end(); it++ ) {
         std::string ss = (*it)->validate_index_msg();
         if ( ss != "" ) {
@@ -79,7 +78,9 @@ Mat44 PerspectiveCamera::to_left_matrix() const {
 
 Separator::~Separator() {
     if (tPtr) delete tPtr;
+    if (mPtr) delete mPtr;
     if (coord3Ptr) delete coord3Ptr;
+    if (normalPtr) delete normalPtr;
     if (ifsPtr) delete ifsPtr;
 }
 

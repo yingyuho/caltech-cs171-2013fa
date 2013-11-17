@@ -41,9 +41,6 @@ public:
 
 class Transform : public CoordTransformer, public NormalTransformer {
 public:
-    template<typename T>
-    static bool deleteAllPtr(T* elemPtr) { delete elemPtr; return true; }
-
     virtual ~Transform() {};
     virtual Mat44 to_left_matrix() const = 0;
     virtual Mat33 to_right_matrix() const = 0;
