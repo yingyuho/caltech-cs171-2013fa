@@ -30,6 +30,8 @@ namespace InventorHelper {
 template< typename T > class ParamEater;
 
 template< typename T > class MeshBuilder;
+typedef MeshBuilder<Vec4> MBCoord;
+typedef MeshBuilder<NVec3> MBNorml;
 
 class Inventor; // PerspectiveCamera (PointLight)+ (Separator)+
 class PerspectiveCamera;
@@ -48,13 +50,15 @@ public:
 };
 
 template< typename T >
-class MeshBuilder : public MeshProcessor< T, const std::vector<T>& > {};
+class MeshBuilder : public MeshProcessor< T, const std::vector<T>& > {
+public:
+    typedef std::vector<T> PointMap;
+};
 
-typedef MeshBuilder<Vec4> MBCoord;
-typedef MeshBuilder<NVec3> MBNorml;
-
-class Inventor : public MeshProcessor<Vec4,void>, public MeshProcessor<NVec3,void>\
+class Inventor \
+: public MeshProcessor<Vec4,void>, public MeshProcessor<NVec3,void>\
 , public ParamEater<PointLight*>, public ParamEater<Separator*> {
+
 private:
     PerspectiveCamera* pCamera;
     std::list<PointLight*> plList;
@@ -64,10 +68,11 @@ public:
     virtual ~Inventor();
     virtual void feed_param(PointLight* pl) { plList.push_back(pl); }
     virtual void feed_param(Separator* sep) { sepList.push_back(sep); }
-    virtual void process_mesh(MBCoord::Mesh& mesh) const;
-    virtual void process_mesh(MBNorml::Mesh& mesh) const;
+    virtual void process_mesh(Mesh<Vec4>& mesh) const;
+    virtual void process_mesh(Mesh<NVec3>& mesh) const;
 
     const std::list<Separator*>& get_separator_list() const { return sepList; }
+    const PerspectiveCamera& get_camera() const { return *pCamera; }
 
     // returns true if coordIndex and normalIndex are consistent for each separator
     bool validate_index() const;
@@ -109,8 +114,8 @@ public:
     ~Separator();
 
     virtual Mat44 to_left_matrix() const { return tPtr->to_left_matrix(); }
-    virtual void process_mesh(MBCoord::Mesh& mesh, const MBCoord::PointMap& pMap) const;
-    virtual void process_mesh(MBNorml::Mesh& mesh, const MBNorml::PointMap& pMap) const;
+    virtual void process_mesh(Mesh<Vec4>& mesh, const std::vector<Vec4>& pMap) const;
+    virtual void process_mesh(Mesh<NVec3>& mesh, const std::vector<NVec3>& pMap) const;
 
     const std::vector<Vec4>& get_obj_space_coord() const;
     const std::vector<Vec4> get_world_space_coord() const;
@@ -176,8 +181,8 @@ public:
     : coordIndex(coordIndex), normalIndex(normalIndex) {}
 
     virtual ~IndexedFaceSet();
-    virtual void process_mesh(MBCoord::Mesh& mesh, const MBCoord::PointMap& pMap) const;
-    virtual void process_mesh(MBNorml::Mesh& mesh, const MBNorml::PointMap& pMap) const;
+    virtual void process_mesh(Mesh<Vec4>& mesh, const std::vector<Vec4>& pMap) const;
+    virtual void process_mesh(Mesh<NVec3>& mesh, const std::vector<NVec3>& pMap) const;
 
     const std::vector<int>& get_coord_index() const { return *coordIndex; }
     const std::vector<int>& get_normal_index() const { return *normalIndex; }

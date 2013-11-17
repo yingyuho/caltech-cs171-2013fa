@@ -12,8 +12,8 @@
 #define _transform_h
 
 #include <string>
-#include <list>
 #include "matrix.h"
+#include "ptr_container.h"
 
 class CoordTransformer;
 class NormalTransformer;
@@ -165,14 +165,14 @@ public:
 
 class ComboTransform : public Transform {
 private:
-    typedef std::list<Transform*> TransformList;
-    TransformList tList;
+    typedef PtrList<Transform> TList;
+    TList tList;
 
 public:
     ComboTransform() {}
 
-    ComboTransform(const TransformList *tPtrList2) {
-        for (TransformList::const_iterator it = tPtrList2->begin(); it != tPtrList2->end(); it++)
+    ComboTransform(const TList *tPtrList2) {
+        for (TList::const_iterator it = tPtrList2->begin(); it != tPtrList2->end(); it++)
             tList.push_back((*it)->clone());
     }
 
@@ -181,16 +181,14 @@ public:
         return *this;
     }
 
-    virtual ~ComboTransform() {
-        tList.remove_if(Transform::deleteAllPtr<Transform>);
-    }
+    virtual ~ComboTransform() {}
 
     virtual Mat44 to_left_matrix() const {
         // start with the identity matrix
         Mat44 m = Mat44(1.);
 
         // right multiplication by matrices in the list
-        for (TransformList::const_iterator it = tList.begin(); it != tList.end(); it++)
+        for (TList::const_iterator it = tList.begin(); it != tList.end(); it++)
             m = m * (*it)->to_left_matrix();
 
         return m;
@@ -201,7 +199,7 @@ public:
         Mat33 m = Mat33(1.);
 
         // left multiplication by matrices in the list
-        for (TransformList::const_iterator it = tList.begin(); it != tList.end(); it++)
+        for (TList::const_iterator it = tList.begin(); it != tList.end(); it++)
             m = (*it)->to_right_matrix() * m;
 
         return m;
@@ -210,7 +208,7 @@ public:
     virtual Transform* inverse() const {
         ComboTransform *t = new ComboTransform();
 
-        for (TransformList::const_iterator it = tList.begin(); it != tList.end(); it++)
+        for (TList::const_iterator it = tList.begin(); it != tList.end(); it++)
             t->tList.push_front((*it)->inverse());
 
         return t;

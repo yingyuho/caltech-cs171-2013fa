@@ -3,8 +3,10 @@
 #include <vector>
 #include <cmath>
 #include "inventor.h"
-#include "mesh_utility.h"
 #include "canvas.h"
+#include "mesh.h"
+#include "mesh_utility.h"
+#include "ptr_container.h"
 
 using namespace std;
 
@@ -47,13 +49,13 @@ int main(int argc, char* argv[])
 
     // retrieve list of polygons (in pixel coordinates) from inventor object
     //PB::VertexType resVec(res);
-    MBCoord::Mesh cList;
-    MBNorml::Mesh nList;
+    Mesh<Vec4> cList;
+    Mesh<NVec3> nList;
     inv->process_mesh(cList);
     inv->process_mesh(nList);
 
-    triangulate<Vec4>(cList);
-    triangulate<NVec3>(nList);
+    cList.triangulate();
+    nList.triangulate();
 
 
     /*for ( PB::MeshCIter it1 = plList.begin(); it1 != plList.end(); it1++ ) {

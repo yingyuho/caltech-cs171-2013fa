@@ -10,65 +10,66 @@
 #ifndef _mesh_utility_h
 #define _mesh_utility_h
 
-#include "mesh_processor.h"
+#include "mesh.h"
 
-template< typename T >
-class Triangulator;
+class BackFaceCuller;
 
-template< typename T >
-class Triangulator : public MeshProcessor<T,void> {
+class BackFaceCuller {
 private:
-    typedef MeshProcessor<T,void> MP;
+    std::vector<int> backFaceIndex;
 public:
-    Triangulator() {}
-    virtual ~Triangulator() {}
-    virtual void process_mesh(typename MP::Mesh& mesh) const;
+    BackFaceCuller(Mesh<Vec4>&);
+    virtual ~BackFaceCuller() {}
+    template< typename T >
+    void operator() (Mesh<T>&) const;
 };
 
-template< typename T >
-void triangulate(typename Triangulator<T>::Mesh& mesh) {
-    static const Triangulator<T> tri;
-    tri.process_mesh(mesh);
-}
+// BackFaceCuller
 
-// Triangulator
+BackFaceCuller::BackFaceCuller(Mesh<Vec4>& mesh) {
 
-template< typename T >
-void Triangulator<T>::process_mesh(typename MP::Mesh& mesh) const {
-    const int L = mesh.size();
+    mesh.triangulate();
 
-    for ( int i = 0; i < L; i++ ) {
-        typename MP::Face * polygon = mesh.front();
-        const int V = polygon->size();
+    int i = 0;
+    Mesh<Vec4>::Iter mit = mesh.begin();
 
-        if ( V < 3 ) {
-            delete polygon;
-            mesh.pop_front();
-            continue;
-        } else if ( V == 3 ) {
-            mesh.push_back(polygon);
-            mesh.pop_front();
-            continue;
-        }
+    while ( mit != mesh.end() ) {
+        Face<Vec4>::Iter fit = (*mit)->begin();
+        const Vec4& v0 = *fit; fit++;
+        const Vec4& v1 = *fit; fit++;
+        const Vec4& v2 = *fit;
 
-        typename MP::FaceCIter it1 = polygon->begin()++;
-        typename MP::FaceCIter it2 = polygon->begin()++++;
+        double n_z = (v2[0]-v1[0])*(v0[1]-v1[1]) - (v2[1]-v1[1])*(v0[0]-v1[0]);
 
-        for ( int j = 0; j < V-2; j++ ) {
-            typename MP::Face * triangle = new typename MP::Face();
+        if ( n_z <= 0 ) {
+            backFaceIndex.push_back(i);
+            delete *mit;
+            mit = mesh.erase(mit);
+        } else { mit++; }
 
-            triangle->push_back(polygon->front());
-            triangle->push_back(*it1);
-            triangle->push_back(*it2);
-
-            mesh.push_back(triangle);
-
-            it1++; it2++;
-        }
-
-        delete polygon;
-        mesh.pop_front();
+        i++;
     }
 }
+
+template< typename T >
+void BackFaceCuller::operator() (Mesh<T>& mesh) const {
+
+    mesh.triangulate();
+
+    int i = 0;
+    Mesh<Vec4>::Iter mit = mesh.begin();
+    std::vector<int>::const_iterator iit = backFaceIndex.begin();
+
+    while ( mit != mesh.end() ) {
+        if ( *iit == i ) {
+            delete *mit;
+            mit = mesh.erase(mit);
+            iit++;
+        } else { mit++; }
+
+        i++;
+    }
+}
+
 
 #endif //   _mesh_utility_h

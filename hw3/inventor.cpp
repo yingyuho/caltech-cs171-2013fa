@@ -7,7 +7,7 @@ Inventor::~Inventor() {
     sepList.remove_if(InventorHelper::deleteAllPtr<Separator>);
 }
 
-void Inventor::process_mesh(MBCoord::Mesh& mesh) const {
+void Inventor::process_mesh(Mesh<Vec4>& mesh) const {
     InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
     for ( std::list<Separator*>::const_iterator it = sepList.begin();\
@@ -20,7 +20,7 @@ void Inventor::process_mesh(MBCoord::Mesh& mesh) const {
     }
 }
 
-void Inventor::process_mesh(MBNorml::Mesh& mesh) const {
+void Inventor::process_mesh(Mesh<NVec3>& mesh) const {
     InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
     for ( std::list<Separator*>::const_iterator it = sepList.begin();\
@@ -83,15 +83,15 @@ Separator::~Separator() {
     if (ifsPtr) delete ifsPtr;
 }
 
-#define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MB)                                  \
-void Separator::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) const {  \
+#define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(T)                                   \
+void Separator::process_mesh(Mesh<T>& mesh, const std::vector<T>& pMap) const {  \
     InventorHelper::watch("Separator::process_mesh()\n");                       \
     /* retrieve polygons from each indexedFaceSet */                            \
     ifsPtr->process_mesh(mesh, pMap);                                           \
 }
 
-MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MBCoord);
-MAKE_METHOD_SEP_BUILD_POLYGON_LIST(MBNorml);
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(Vec4);
+MAKE_METHOD_SEP_BUILD_POLYGON_LIST(NVec3);
 
 const std::vector<Vec4>& Separator::get_obj_space_coord() const {
     return coord3Ptr->get_obj_space_coord();
@@ -243,11 +243,11 @@ IndexedFaceSet::~IndexedFaceSet() {
     if (normalIndex) delete normalIndex;
 }
 
-#define MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MB, indVal)                                              \
-void IndexedFaceSet::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) const {                 \
+#define MAKE_METHOD_IFS_BUILD_POLYGON_LIST(T, indVal)                                              \
+void IndexedFaceSet::process_mesh(Mesh<T>& mesh, const std::vector<T>& pMap) const {                 \
     InventorHelper::watch("IndexedFaceSet::process_mesh()\n");                                      \
                                                                                                     \
-    MB::Face * polyLPtr = new MB::Face();                                                           \
+    Face<T> * polyLPtr = new Face<T>();                                                           \
                                                                                                     \
     for ( std::vector<int>::const_iterator it = indVal->begin(); it != indVal->end(); it++ ) {      \
         InventorHelper::watch(*it);                                                                 \
@@ -255,7 +255,7 @@ void IndexedFaceSet::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) cons
             /* push polygon */                                                                      \
             mesh.push_back(polyLPtr);                                                               \
             /* create an empty polygon */                                                           \
-            polyLPtr = new MB::Face();                                                              \
+            polyLPtr = new Face<T>();                                                              \
         } else {                                                                                    \
             /* add a vertex to polygon */                                                           \
             polyLPtr->push_back(pMap[*it]);                                                         \
@@ -270,5 +270,5 @@ void IndexedFaceSet::process_mesh(MB::Mesh& mesh, const MB::PointMap& pMap) cons
         mesh.push_back(polyLPtr);                                                                   \
 }
 
-MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MBCoord, coordIndex);
-MAKE_METHOD_IFS_BUILD_POLYGON_LIST(MBNorml, normalIndex);
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(Vec4, coordIndex);
+MAKE_METHOD_IFS_BUILD_POLYGON_LIST(NVec3, normalIndex);
