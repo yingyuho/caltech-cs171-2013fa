@@ -29,7 +29,7 @@ $(PARSER).tab.o: $(PARSER).tab.cpp inventor.o parser_param.tag
 $(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.o parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-mesh.tag: mesh.h mesh.cpp face.h transform.o
+mesh.tag: mesh.h mesh.cpp face.h transform.o ptr_container.h
 	echo > mesh.tag
 
 mesh_processor.tag: mesh_processor.h mesh.tag

@@ -10,7 +10,7 @@
 #ifndef _mesh_h
 #define _mesh_h
 
-#include <list>
+#include "ptr_container.h"
 #include "transform.h"
 #include "face.h"
 
@@ -20,16 +20,16 @@ class Mesh;
 class CoordMesh;
 
 template< typename T >
-class Mesh : public std::list<Face<T>*> {
+class Mesh : public PtrList< Face<T> > {
 public:
     typedef T Type;
-    typedef typename std::list<Face<T>*>::iterator Iter;
-    typedef typename std::list<Face<T>*>::const_iterator CIter;
+    typedef typename PtrList< Face<T> >::iterator Iter;
+    typedef typename PtrList< Face<T> >::const_iterator CIter;
 
     Mesh() {}
-    Mesh(const Mesh&);
+    Mesh(const Mesh& x) : PtrList< Face<T> >(x) {};
 
-    virtual ~Mesh();
+    virtual ~Mesh() {};
 
     bool triangulated() const;
     void triangulate();
@@ -51,17 +51,17 @@ bool Mesh<T>::triangulated() const {
     return true;
 }
 
-template< typename T >
-Mesh<T>::Mesh(const Mesh& mesh) {
-    for ( CIter it = mesh.begin(); it != mesh.end(); it++ )
-        this->push_back(new Face<T>(**it));
-}
+// template< typename T >
+// Mesh<T>::Mesh(const Mesh& mesh) {
+//     for ( CIter it = mesh.begin(); it != mesh.end(); it++ )
+//         this->push_back(new Face<T>(**it));
+// }
 
-template< typename T >
-Mesh<T>::~Mesh() {
-    for ( Iter it = this->begin(); it != this->end(); it++ )
-        delete *it;
-}
+// template< typename T >
+// Mesh<T>::~Mesh() {
+//     for ( Iter it = this->begin(); it != this->end(); it++ )
+//         delete *it;
+// }
 
 template< typename T >
 void Mesh<T>::triangulate() {
