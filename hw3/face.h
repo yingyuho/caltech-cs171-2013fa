@@ -11,18 +11,20 @@
 #define _face_h
 
 #include <list>
+#include <vector>
 #include "matrix.h"
 
 template< typename T >
-class Face : public std::list<T> {
+class Face : public std::vector<T> {
 public:
     typedef T Type;
-    typedef typename std::list<T>::iterator Iter;
-    typedef typename std::list<T>::const_iterator CIter;
+    typedef typename std::vector<T>::iterator Iter;
+    typedef typename std::vector<T>::const_iterator CIter;
     Face() {}
-    Face(const Face& face) : std::list<T>(face) {}
+    Face(size_t n) : std::vector<T>(n) {}
+    Face(const Face& face) : std::vector<T>(face) {}
     Face& operator= (const Face& face) {
-    	std::list<T>::operator=(face);
+    	std::vector<T>::operator=(face);
     }
     virtual ~Face() {}
 };

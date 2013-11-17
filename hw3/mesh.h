@@ -22,15 +22,15 @@ class CoordMesh;
 class PixelMesh;
 
 template< typename T >
-class Mesh : public PtrList< Face<T> > {
+class Mesh : public PtrVector< Face<T> > {
 public:
     typedef T Type;
-    typedef typename PtrList< Face<T> >::iterator Iter;
-    typedef typename PtrList< Face<T> >::const_iterator CIter;
+    typedef typename PtrVector< Face<T> >::iterator Iter;
+    typedef typename PtrVector< Face<T> >::const_iterator CIter;
 
     Mesh() {}
-    Mesh(const Mesh& x) : PtrList< Face<T> >(x) {};
-    Mesh& operator= (const Mesh& x) { PtrList< Face<T> >::operator=(x); }
+    Mesh(const Mesh& x) : PtrVector< Face<T> >(x) {};
+    Mesh& operator= (const Mesh& x) { PtrVector< Face<T> >::operator=(x); }
     virtual ~Mesh() {};
 
     bool triangulated() const;
@@ -80,19 +80,19 @@ template< typename T >
 void Mesh<T>::triangulate() {
     if ( triangulated() ) return;
 
+    Mesh<T> newMesh;
+
     const int L = this->size();
 
-    for ( int i = 0; i < L; i++ ) {
-        Face<T> * polygon = this->front();
+    for ( Mesh<T>::Iter it = this->begin(); it != this->end(); it++ ) {
+        Face<T> * polygon = *it;
         const int V = polygon->size();
 
         if ( V < 3 ) {
             delete polygon;
-            this->pop_front();
             continue;
         } else if ( V == 3 ) {
-            this->push_back(polygon);
-            this->pop_front();
+            newMesh.push_back(polygon);
             continue;
         }
 
@@ -100,18 +100,20 @@ void Mesh<T>::triangulate() {
         typename Face<T>::CIter it1 = polygon->begin(); it1++;
 
         for ( int j = 0; j < V-2; j++ ) {
-            Face<T> * triangle = new Face<T>();
+            Face<T> * triangle = new Face<T>(3);
 
-            triangle->push_back(*it0);
-            triangle->push_back(*it1); it1++;
-            triangle->push_back(*it1);
+            triangle->at(0) = *it0;
+            triangle->at(1) = *it1; it1++;
+            triangle->at(2) = *it1;
 
-            this->push_back(triangle);
+            newMesh.push_back(triangle);
         }
 
         delete polygon;
-        this->pop_front();
     }
+
+    this->clear();
+    this->swap(newMesh);
 }
 
 // operator<< (std::ostream, const Mesh<T>)
