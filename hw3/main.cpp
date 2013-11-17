@@ -57,10 +57,10 @@ int main(int argc, char* argv[])
     CoordMesh coord_nd(coord_ws);
     coord_nd.transform(inv->get_camera());
 
-    BackFaceCuller bfc(coord_nd);
     PixelMesh pxMesh(coord_nd, res[0], res[1]);
+    BackFaceCuller bfc(coord_nd);
 
-    //bfc(pxMesh);
+    bfc(pxMesh);
 
     for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
         // ignore "faces" with only zero or one vertex

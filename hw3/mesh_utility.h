@@ -41,8 +41,10 @@ BackFaceCuller::BackFaceCuller(Mesh<Vec4>& mesh) {
 
         if ( n_z <= 0 )
             delete mesh[i];
-        else
+        else {
             newMesh.push_back(mesh[i]);
+            backFaceIndex.push_back(i);
+        }
     }
 
     mesh.clear();
@@ -67,18 +69,6 @@ void BackFaceCuller::operator() (Mesh<T>& mesh) const {
     mesh.clear();
     mesh.swap(newMesh);
 
-    // typename Mesh<T>::Iter mit = mesh.begin();
-    // std::vector<int>::const_iterator iit = backFaceIndex.begin();
-
-    // while ( mit != mesh.end() ) {
-    //     if ( *iit == i ) {
-    //         delete *mit;
-    //         mit = mesh.erase(mit);
-    //         iit++;
-    //     } else { mit++; }
-
-    //     i++;
-    // }
 }
 
 

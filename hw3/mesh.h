@@ -29,6 +29,7 @@ public:
     typedef typename PtrVector< Face<T> >::const_iterator CIter;
 
     Mesh() {}
+    Mesh(size_t n) : PtrVector< Face<T> >(n) {}
     Mesh(const Mesh& x) : PtrVector< Face<T> >(x) {};
     Mesh& operator= (const Mesh& x) { PtrVector< Face<T> >::operator=(x); }
     virtual ~Mesh() {};

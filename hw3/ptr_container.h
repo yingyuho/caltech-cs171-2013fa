@@ -33,6 +33,7 @@ private:
 	void deleteAllPtr();
 public:
     PtrVector() {}
+    PtrVector(size_t n) : std::vector<T*>(n) {}
     PtrVector(const PtrVector&);
     PtrVector& operator= (const PtrVector&);
     virtual ~PtrVector();
