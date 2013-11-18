@@ -16,8 +16,11 @@
 
 typedef unsigned int matdim_t;
 
-template<typename T, matdim_t R, matdim_t C>
+template< typename T, matdim_t R, matdim_t C >
 class Matrix;
+
+template< typename T, matdim_t R >
+Matrix<T,R-1,1> homogenize(const Matrix<T,R,1>& v);
 
 typedef Matrix<double,4,4> Mat44;
 typedef Matrix<double,3,3> Mat33;
@@ -239,6 +242,14 @@ public:
         return matrix_inv;
     }
 };
+
+// homogenize a vector
+
+template< typename T, matdim_t R >
+Matrix<T,R-1,1> homogenize(const Matrix<T,R,1>& v) {
+    Matrix<T,R-1,1> v2(&(v[0]));
+    return v2 / v[R-1];
+}
 
 // left multiplication by a scalar
 template<typename T, matdim_t R, matdim_t C>

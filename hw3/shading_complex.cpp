@@ -1,16 +1,5 @@
 #include "shading_complex.h"
 
-// ShadingData
-
-ShadingData::ShadingData()\
-: ws_coord(0.), nd_coord(0.), ws_normal(0.) {}
-
-ShadingData::ShadingData(const Vec4& ws_coord, const Vec4& nd_coord, const NVec3& ws_normal)\
-: ws_coord(ws_coord), nd_coord(nd_coord), ws_normal(ws_normal) {}
-
-ShadingData::ShadingData(const ShadingData& x)\
-: ws_coord(x.ws_coord), nd_coord(x.nd_coord), ws_normal(x.ws_normal) {}
-
 // ShadingModule
 
 ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) \
@@ -26,9 +15,9 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
     for ( int i = 0; i < meshWSC.size(); i++ ) {
         Face<ShadingData> * face = new Face<ShadingData>(meshWSC[i]->size());
         for ( int j = 0; j < meshWSC[i]->size(); j++ ) {
-            face->at(j).ws_coord = meshWSC[i]->at(j);
-            face->at(j).nd_coord = meshNDC[i]->at(j);
-            face->at(j).ws_normal = meshWSN[i]->at(j);
+            face->at(j).ws_coord = homogenize(meshWSC[i]->at(j));
+            face->at(j).nd_coord = homogenize(meshNDC[i]->at(j));
+            face->at(j).ws_normal = meshWSN[i]->at(j).normalize();
         }
         this->mesh.push_back(face);
     }
@@ -36,6 +25,9 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
     BackFaceCuller bfc(meshNDC);
     bfc(this->mesh);
 }
+
+const Mesh<ShadingData>& ShadingModule::get_mesh() const { return mesh; }
+const Material& ShadingModule::get_material() const { return material; }
 
 // ShadingComplex
 
@@ -47,3 +39,5 @@ ShadingComplex::ShadingComplex(const Inventor& inv) \
     for ( PtrList<Separator>::const_iterator it = sepList.begin(); it != sepList.end(); it++ )
         moduleList.push_back( new ShadingModule(pCamera, **it) );
 }
+
+const PtrList<ShadingModule>& ShadingComplex::get_module_list() const { return moduleList; };

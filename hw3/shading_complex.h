@@ -11,22 +11,11 @@
 #define _shading_complex_h
 
 #include "inventor.h"
+#include "shading_data.h"
 #include "mesh_utility.h"
 
-struct ShadingData;
 class ShadingModule;
 class ShadingComplex;
-
-
-struct ShadingData {
-public:
-    Vec4 ws_coord;
-    Vec4 nd_coord;
-    NVec3 ws_normal;
-    ShadingData();
-    ShadingData(const Vec4&, const Vec4&, const NVec3&);
-    ShadingData(const ShadingData&);
-};
 
 class ShadingModule {
 private:
@@ -34,8 +23,8 @@ private:
     Material material;
 public:
     ShadingModule(const PerspectiveCamera&, const Separator&);
-    const Mesh<ShadingData>& get_mesh() const { return mesh; }
-    const Material& get_material() const { return material; }
+    const Mesh<ShadingData>& get_mesh() const;
+    const Material& get_material() const;
 };
 
 class ShadingComplex {
@@ -45,6 +34,7 @@ private:
     PtrList<ShadingModule> moduleList;
 public:
     ShadingComplex(const Inventor&);
+    const PtrList<ShadingModule>& get_module_list() const;
 };
 
 

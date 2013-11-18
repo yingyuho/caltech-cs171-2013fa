@@ -12,12 +12,19 @@
 
 #include "matrix.h"
 
-struct ShadingData {
+class ShadingData;
+
+class ShadingData {
 public:
-    Vec4 coordWS;
-    Vec4 coordND;
-    NVec3 normalWS;
+    Vec3 ws_coord;
+    Vec3 nd_coord;
+    NVec3 ws_normal;
+    ShadingData();
+    ShadingData(const Vec4&, const Vec4&, const NVec3&);
+    ShadingData(const ShadingData&);
 };
+
+std::ostream& operator<<(std::ostream&, const ShadingData&);
 
 
 #endif //   _shading_data_h

@@ -4,9 +4,7 @@
 #include <cmath>
 #include "inventor.h"
 #include "canvas.h"
-#include "mesh.h"
-#include "mesh_utility.h"
-#include "ptr_container.h"
+#include "shading_complex.h"
 
 using namespace std;
 
@@ -44,6 +42,15 @@ int main(int argc, char* argv[])
              << inv->validate_index_msg() << endl;
         return 1;
     }
+
+    ShadingComplex sComp(*inv);
+    const PtrList<ShadingModule>& smList = sComp.get_module_list();
+
+    for ( PtrList<ShadingModule>::const_iterator it = smList.cbegin(); it != smList.cend(); it++ ) {
+        cout << (*it)->get_mesh();
+    }
+
+
 
     // retrieve list of polygons (in pixel coordinates) from inventor object
 
