@@ -87,8 +87,9 @@ private:
     const double    n,          f,      l,      r,      t,      b;
 
 public:
-    PerspectiveCamera(Vec3 pos, Vec4 orient \
+    PerspectiveCamera(const Vec3& pos, const Vec4& orient \
     , double n, double f, double l, double r, double t, double b);
+    PerspectiveCamera(const PerspectiveCamera&);
 
     virtual Mat44 to_left_matrix() const;
 };
