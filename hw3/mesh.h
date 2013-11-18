@@ -46,6 +46,14 @@ public:
     void transform(const CoordTransformer&);
 };
 
+class NormalMesh : public Mesh<NVec3> {
+public:
+    NormalMesh() {}
+    NormalMesh(const NormalMesh& mesh) : Mesh(mesh) {}
+    virtual ~NormalMesh() {}
+    void normalize();
+};
+
 class PixelMesh : public Mesh<IntVec2> {
 public:
     const int xRes;

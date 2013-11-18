@@ -48,19 +48,23 @@ int main(int argc, char* argv[])
     // retrieve list of polygons (in pixel coordinates) from inventor object
     //PB::VertexType resVec(res);
     CoordMesh coord_ws;
-    Mesh<NVec3> normal_ws;
     inv->process_mesh(coord_ws);
-    inv->process_mesh(normal_ws);
-
     coord_ws.triangulate();
+
+    NormalMesh normal_ws;
+    inv->process_mesh(normal_ws);
+    normal_ws.normalize();
     normal_ws.triangulate();
+
     CoordMesh coord_nd(coord_ws);
     coord_nd.transform(inv->get_camera());
 
-    PixelMesh pxMesh(coord_nd, res[0], res[1]);
     BackFaceCuller bfc(coord_nd);
+    bfc(coord_ws);
+    bfc(normal_ws);
 
-    bfc(pxMesh);
+    PixelMesh pxMesh(coord_nd, res[0], res[1]);
+
 
     for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
         // ignore "faces" with only zero or one vertex

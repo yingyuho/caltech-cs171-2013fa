@@ -8,6 +8,14 @@ void CoordMesh::transform(const CoordTransformer& t) {
             (*it2) = t.to_left_matrix() * (*it2);
 }
 
+// NormalMesh
+
+void NormalMesh::normalize() {
+    for ( Iter it = this->begin(); it != this->end(); it++ )
+        for ( Face<NVec3>::Iter it2 = (*it)->begin(); it2 != (*it)->end(); it2++ )
+            (*it2) = it2->normalize();
+}
+
 // PixelMesh
 
 PixelMesh::PixelMesh(const CoordMesh& x, int xRes, int yRes) \

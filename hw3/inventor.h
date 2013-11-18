@@ -70,6 +70,7 @@ public:
     virtual void process_mesh(Mesh<Vec4>& mesh) const;
     virtual void process_mesh(Mesh<NVec3>& mesh) const;
 
+    const PtrList<PointLight>& get_light_list() const { return plList; }
     const PtrList<Separator>& get_separator_list() const { return sepList; }
     const PerspectiveCamera& get_camera() const { return *pCamera; }
 
