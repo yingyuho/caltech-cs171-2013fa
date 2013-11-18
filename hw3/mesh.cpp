@@ -21,10 +21,10 @@ void NormalMesh::normalize() {
 PixelMesh::PixelMesh(const CoordMesh& x, int xRes, int yRes) \
 : xRes(xRes), yRes(yRes) {
     for ( CoordMesh::CIter it = x.begin(); it != x.end(); it++ ) {
-    	Face<IntVec2>* face = new Face<IntVec2>();
+        Face<IntVec2>* face = new Face<IntVec2>();
         for ( Face<Vec4>::CIter it2 = (*it)->begin(); it2 != (*it)->end(); it2++ ) {
-            int xy[2] = 	{ (int)floor(xRes*(1 + (*it2)[0]/(*it2)[3])/2) \
-            				, (int)floor(yRes*(1 + (*it2)[1]/(*it2)[3])/2) };
+            int xy[2] =     { (int)floor(xRes*(1 + (*it2)[0]/(*it2)[3])/2) \
+                            , (int)floor(yRes*(1 + (*it2)[1]/(*it2)[3])/2) };
             face->push_back(IntVec2(xy));
         }
         this->push_back(face);

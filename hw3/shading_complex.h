@@ -30,21 +30,21 @@ public:
 
 class ShadingModule {
 private:
-	Mesh<ShadingData> mesh;
-	Material material;
+    Mesh<ShadingData> mesh;
+    Material material;
 public:
-	ShadingModule(const PerspectiveCamera&, const Separator&);
-	const Mesh<ShadingData>& get_mesh() const { return mesh; }
-	const Material& get_material() const { return material; }
+    ShadingModule(const PerspectiveCamera&, const Separator&);
+    const Mesh<ShadingData>& get_mesh() const { return mesh; }
+    const Material& get_material() const { return material; }
 };
 
 class ShadingComplex {
 private:
-	PerspectiveCamera pCamera;
+    PerspectiveCamera pCamera;
     PtrList<PointLight> plList;
-	PtrList<ShadingModule> moduleList;
+    PtrList<ShadingModule> moduleList;
 public:
-	ShadingComplex(const Inventor&);
+    ShadingComplex(const Inventor&);
 };
 
 

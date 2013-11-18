@@ -24,13 +24,13 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
     NormalMesh meshWSN; sep.process_mesh(meshWSN, wsn);
 
     for ( int i = 0; i < meshWSC.size(); i++ ) {
-    	Face<ShadingData> * face = new Face<ShadingData>(meshWSC[i]->size());
-    	for ( int j = 0; j < meshWSC[i]->size(); j++ ) {
-    		face->at(j).ws_coord = meshWSC[i]->at(j);
-    		face->at(j).nd_coord = meshNDC[i]->at(j);
-    		face->at(j).ws_normal = meshWSN[i]->at(j);
-    	}
-    	this->mesh.push_back(face);
+        Face<ShadingData> * face = new Face<ShadingData>(meshWSC[i]->size());
+        for ( int j = 0; j < meshWSC[i]->size(); j++ ) {
+            face->at(j).ws_coord = meshWSC[i]->at(j);
+            face->at(j).nd_coord = meshNDC[i]->at(j);
+            face->at(j).ws_normal = meshWSN[i]->at(j);
+        }
+        this->mesh.push_back(face);
     }
 
     BackFaceCuller bfc(meshNDC);
@@ -42,8 +42,8 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
 ShadingComplex::ShadingComplex(const Inventor& inv) \
 : pCamera(inv.get_camera()), plList(inv.get_light_list()) {
 
-	const PtrList<Separator>& sepList =  inv.get_separator_list();
+    const PtrList<Separator>& sepList =  inv.get_separator_list();
 
-	for ( PtrList<Separator>::const_iterator it = sepList.begin(); it != sepList.end(); it++ )
-		moduleList.push_back( new ShadingModule(pCamera, **it) );
+    for ( PtrList<Separator>::const_iterator it = sepList.begin(); it != sepList.end(); it++ )
+        moduleList.push_back( new ShadingModule(pCamera, **it) );
 }
