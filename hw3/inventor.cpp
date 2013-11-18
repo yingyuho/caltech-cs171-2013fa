@@ -72,7 +72,7 @@ const std::string Inventor::validate_index_msg() const {
 
 // PerspectiveCamera
 
-PerspectiveCamera(Vec3 pos, Vec4 orient \
+PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec4 orient \
 , double n, double f, double l, double r, double t, double b) \
 : pos(pos), axis(Vec3(&(orient[0])).normalize()), rot_angle(orient[3]) \
 , n(n), f(f), l(l), r(r), t(t), b(b) {}
