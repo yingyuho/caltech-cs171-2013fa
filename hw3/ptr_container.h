@@ -76,9 +76,12 @@ PtrVector<T>::PtrVector(const PtrVector& x) : std::vector<T*>(x) {
 
 template< typename T >
 PtrVector<T>& PtrVector<T>::operator= (const PtrVector& x) {
-	this->deleteAllPtr();
-	std::vector<T*>::operator= (x);
-	std::transform(this->cbegin(), this->cend(), this->begin(), clone);
+	if ( this != &x ) {
+		this->deleteAllPtr();
+		std::vector<T*>::operator= (x);
+		std::transform(this->cbegin(), this->cend(), this->begin(), clone);
+	}
+	return *this;
 }
 
 template< typename T >

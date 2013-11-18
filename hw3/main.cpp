@@ -46,8 +46,9 @@ int main(int argc, char* argv[])
     }
 
     // retrieve list of polygons (in pixel coordinates) from inventor object
+
     //PB::VertexType resVec(res);
-    CoordMesh coord_ws;
+    /*CoordMesh coord_ws;
     inv->process_mesh(coord_ws);
     coord_ws.triangulate();
 
@@ -61,12 +62,12 @@ int main(int argc, char* argv[])
 
     BackFaceCuller bfc(coord_nd);
     bfc(coord_ws);
-    bfc(normal_ws);
+    bfc(normal_ws);*/
 
-    PixelMesh pxMesh(coord_nd, res[0], res[1]);
+    //PixelMesh pxMesh(coord_nd, res[0], res[1]);
 
 
-    for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
+    /*for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
         // ignore "faces" with only zero or one vertex
         if ( (*it1)->size() < 2 ) { continue; }
 
@@ -79,7 +80,7 @@ int main(int argc, char* argv[])
 
         // close the polygon by connecting p(n) and p(1)
         canvas->draw_line(*it2_1,(*it1)->front());
-    }
+    }*/
 
     // send ppm image to stdout
     canvas->print_ppm(cout);

@@ -31,7 +31,13 @@ public:
     Mesh() {}
     Mesh(size_t n) : PtrVector< Face<T> >(n) {}
     Mesh(const Mesh& x) : PtrVector< Face<T> >(x) {};
-    Mesh& operator= (const Mesh& x) { PtrVector< Face<T> >::operator=(x); }
+
+    Mesh& operator= (const Mesh& x) {
+        if ( this != &x )
+            PtrVector< Face<T> >::operator=(x);
+        return *this;
+    }
+    
     virtual ~Mesh() {};
 
     bool triangulated() const;
@@ -72,18 +78,6 @@ bool Mesh<T>::triangulated() const {
         if ( (*it)->size() != 3 ) return false;
     return true;
 }
-
-// template< typename T >
-// Mesh<T>::Mesh(const Mesh& mesh) {
-//     for ( CIter it = mesh.begin(); it != mesh.end(); it++ )
-//         this->push_back(new Face<T>(**it));
-// }
-
-// template< typename T >
-// Mesh<T>::~Mesh() {
-//     for ( Iter it = this->begin(); it != this->end(); it++ )
-//         delete *it;
-// }
 
 template< typename T >
 void Mesh<T>::triangulate() {

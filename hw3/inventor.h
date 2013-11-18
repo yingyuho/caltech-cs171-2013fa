@@ -65,13 +65,13 @@ private:
 public:
     Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}
     virtual ~Inventor();
-    virtual void feed_param(PointLight* pl) { plList.push_back(pl); }
-    virtual void feed_param(Separator* sep) { sepList.push_back(sep); }
-    virtual void process_mesh(Mesh<Vec4>& mesh) const;
-    virtual void process_mesh(Mesh<NVec3>& mesh) const;
+    virtual void feed_param(PointLight*);
+    virtual void feed_param(Separator*);
+    virtual void process_mesh(Mesh<Vec4>&) const;
+    virtual void process_mesh(Mesh<NVec3>&) const;
 
-    const PtrList<PointLight>& get_light_list() const { return plList; }
-    const PtrList<Separator>& get_separator_list() const { return sepList; }
+    const PtrList<PointLight>& get_light_list() const;
+    const PtrList<Separator>& get_separator_list() const;
     const PerspectiveCamera& get_camera() const { return *pCamera; }
 
     // returns true if coordIndex and normalIndex are consistent for each separator
@@ -81,9 +81,11 @@ public:
 
 class PerspectiveCamera : public CoordTransformer {
 private:
-    Vec3 pos; Vec3 axis; double rot_angle;
-    //      nearDistance    farDistance     left    right   top     bottom
-    double  n,              f,              l,      r,      t,      b;
+    const Vec3 pos, axis; const double rot_angle;
+
+    //              nearDist    farDist left    right   top     bottom
+    const double    n,          f,      l,      r,      t,      b;
+
 public:
     PerspectiveCamera(Vec3 pos, Vec4 orient \
         , double n, double f, double l, double r, double t, double b) \
@@ -98,6 +100,7 @@ public:
     const Vec3 location;
     const Vec3 color;
     PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
+    PointLight(const PointLight& pl) : location(pl.location), color(pl.color) {}
 };
 
 class Separator : public MBCoord, public MBNorml, public CoordTransformer {
@@ -113,13 +116,13 @@ public:
     : tPtr(tPtr), mPtr(mPtr), coord3Ptr(cPtr), normalPtr(nPtr), ifsPtr(iPtr) {}
     ~Separator();
 
-    virtual Mat44 to_left_matrix() const { return tPtr->to_left_matrix(); }
+    virtual Mat44 to_left_matrix() const;
     virtual void process_mesh(Mesh<Vec4>& mesh, const std::vector<Vec4>& pMap) const;
     virtual void process_mesh(Mesh<NVec3>& mesh, const std::vector<NVec3>& pMap) const;
 
     const std::vector<Vec4>& get_obj_space_coord() const;
     const std::vector<Vec4> get_world_space_coord() const;
-    const std::vector<Vec4> get_norm_device_coord(const Mat44& pcMatrix) const;
+    const std::vector<Vec4> get_norm_device_coord(const PerspectiveCamera&) const;
     const std::vector<IntVec2> get_pixel_coord(const Mat44& pcMatrix, int xRes, int yRes) const;
 
     const std::vector<NVec3>& get_obj_space_normal() const;
@@ -127,6 +130,8 @@ public:
 
     const std::vector<int>& get_coord_index() const;
     const std::vector<int>& get_normal_index() const;
+
+    const Material& get_material() const;
 
     // returns true if get_coord_index() and get_normal_index() are consistent
     bool validate_index() const;
@@ -139,37 +144,30 @@ public:
     const Vec3 dColor;
     const Vec3 sColor;
     const double shininess;
-    Material(const Vec3& aColor, const Vec3& dColor, const Vec3& sColor, double shininess)\
-     : aColor(aColor), dColor(dColor), sColor(sColor), shininess(shininess) {}
+
+    Material(const Vec3& aColor, const Vec3& dColor, const Vec3& sColor, double shininess);
+
+    Material(const Material&);
 };
 
 class Coordinate3 : public ParamEater<const Vec3&> {
 private:
     std::vector<Vec4> ptVec;
 public:
-    Coordinate3() {}
-    virtual ~Coordinate3() {}
-
-    virtual void feed_param(const Vec3& v) {
-        double v4[4] = {v[0], v[1], v[2], 1};
-        ptVec.push_back(Vec4(v4));
-    }
-
-    const std::vector<Vec4>& get_obj_space_coord() const { return ptVec; }
+    Coordinate3();
+    virtual ~Coordinate3();
+    virtual void feed_param(const Vec3&);
+    const std::vector<Vec4>& get_obj_space_coord() const;
 };
 
 class Normal3 : public ParamEater<const Vec3&> {
 private:
     std::vector<NVec3> normalVec;
 public:
-    Normal3() {}
-    virtual ~Normal3() {}
-
-    virtual void feed_param(const Vec3& v) {
-        normalVec.push_back(v.transpose());
-    }
-
-    const std::vector<NVec3>& get_obj_space_normal() const { return normalVec; }
+    Normal3();
+    virtual ~Normal3();
+    virtual void feed_param(const Vec3&);
+    const std::vector<NVec3>& get_obj_space_normal() const;
 };
 
 class IndexedFaceSet : public MBCoord, public MBNorml {
@@ -177,15 +175,14 @@ private:
     std::vector<int> * coordIndex;
     std::vector<int> * normalIndex;
 public:
-    IndexedFaceSet(std::vector<int> * coordIndex, std::vector<int> * normalIndex)\
-    : coordIndex(coordIndex), normalIndex(normalIndex) {}
+    IndexedFaceSet(std::vector<int> * coordIndex, std::vector<int> * normalIndex);
 
     virtual ~IndexedFaceSet();
     virtual void process_mesh(Mesh<Vec4>& mesh, const std::vector<Vec4>& pMap) const;
     virtual void process_mesh(Mesh<NVec3>& mesh, const std::vector<NVec3>& pMap) const;
 
-    const std::vector<int>& get_coord_index() const { return *coordIndex; }
-    const std::vector<int>& get_normal_index() const { return *normalIndex; }
+    const std::vector<int>& get_coord_index() const;
+    const std::vector<int>& get_normal_index() const;
 };
 
 

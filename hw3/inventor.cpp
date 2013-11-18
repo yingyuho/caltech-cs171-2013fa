@@ -6,6 +6,9 @@ Inventor::~Inventor() {
     if (pCamera) delete pCamera;
 }
 
+void Inventor::feed_param(PointLight* pl) { plList.push_back(pl); }
+void Inventor::feed_param(Separator* sep) { sepList.push_back(sep); }
+
 void Inventor::process_mesh(Mesh<Vec4>& mesh) const {
     InventorHelper::watch("Inventor::process_mesh()\n");
     // for each separator
@@ -31,6 +34,9 @@ void Inventor::process_mesh(Mesh<NVec3>& mesh) const {
         (*it)->process_mesh(mesh, wsn);
     }
 }
+
+const PtrList<PointLight>& Inventor::get_light_list() const { return plList; }
+const PtrList<Separator>& Inventor::get_separator_list() const { return sepList; }
 
 
 bool Inventor::validate_index() const {
@@ -84,6 +90,8 @@ Separator::~Separator() {
     if (ifsPtr) delete ifsPtr;
 }
 
+Mat44 Separator::to_left_matrix() const { return tPtr->to_left_matrix(); }
+
 #define MAKE_METHOD_SEP_BUILD_POLYGON_LIST(T)                                   \
 void Separator::process_mesh(Mesh<T>& mesh, const std::vector<T>& pMap) const {  \
     InventorHelper::watch("Separator::process_mesh()\n");                       \
@@ -113,14 +121,14 @@ const std::vector<Vec4> Separator::get_world_space_coord() const {
     return wsc;
 }
 
-const std::vector<Vec4> Separator::get_norm_device_coord(const Mat44& pcMatrix) const {
+const std::vector<Vec4> Separator::get_norm_device_coord(const PerspectiveCamera& pc) const {
     const std::vector<Vec4>& osc = get_obj_space_coord();
     std::vector<Vec4> ndc(osc.size());
 
     // v_ndc = P * C^(-1) * O * v_osc
     // P * C^(-1) = pcMatrix
     // O = object transforms = tPtr->to_left_matrix()
-    Mat44 mat = pcMatrix * tPtr->to_left_matrix();
+    Mat44 mat = pc.to_left_matrix() * tPtr->to_left_matrix();
 
     // std::vector<Vec4> osc => std::vector<Vec4> ndc
     for ( int i = 0; i < osc.size(); i++ )
@@ -175,6 +183,10 @@ const std::vector<int>& Separator::get_coord_index() const {
 
 const std::vector<int>& Separator::get_normal_index() const {
     return ifsPtr->get_normal_index();
+}
+
+const Material& Separator::get_material() const {
+    return *mPtr;
 }
 
 bool Separator::validate_index() const {
@@ -236,7 +248,42 @@ const std::string Separator::validate_index_msg() const {
     return "";
 }
 
+// Material
+
+Material::Material(const Vec3& a, const Vec3& d, const Vec3& s, double shininess)\
+: aColor(a), dColor(d), sColor(s), shininess(shininess) {}
+
+
+Material::Material(const Material& m)\
+: aColor(m.aColor), dColor(m.dColor), sColor(m.sColor), shininess(m.shininess) {}
+
+// Coordinate3
+
+Coordinate3::Coordinate3() {}
+
+Coordinate3::~Coordinate3() {}
+
+void Coordinate3::feed_param(const Vec3& v) {
+    double v4[4] = {v[0], v[1], v[2], 1};
+    ptVec.push_back(Vec4(v4));
+}
+
+const std::vector<Vec4>& Coordinate3::get_obj_space_coord() const { return ptVec; }
+
+// Normal3
+
+Normal3::Normal3() {}
+
+Normal3::~Normal3() {}
+
+void Normal3::feed_param(const Vec3& v) { normalVec.push_back(v.transpose()); }
+
+const std::vector<NVec3>& Normal3::get_obj_space_normal() const { return normalVec; }
+
 // IndexedFaceSet
+
+IndexedFaceSet::IndexedFaceSet(std::vector<int> * coordIndex, std::vector<int> * normalIndex)\
+: coordIndex(coordIndex), normalIndex(normalIndex) {}
 
 IndexedFaceSet::~IndexedFaceSet() {
     InventorHelper::watch("IndexedFaceSet::~IndexedFaceSet()\n");
@@ -273,3 +320,7 @@ void IndexedFaceSet::process_mesh(Mesh<T>& mesh, const std::vector<T>& pMap) con
 
 MAKE_METHOD_IFS_BUILD_POLYGON_LIST(Vec4, coordIndex);
 MAKE_METHOD_IFS_BUILD_POLYGON_LIST(NVec3, normalIndex);
+
+const std::vector<int>& IndexedFaceSet::get_coord_index() const { return *coordIndex; }
+const std::vector<int>& IndexedFaceSet::get_normal_index() const { return *normalIndex; }
+

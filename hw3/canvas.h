@@ -14,6 +14,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include "pixel.h"
 #include "matrix.h"
 
 // different containers T<IntVec2> can be used to process lists of pixels
