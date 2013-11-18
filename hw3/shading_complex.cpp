@@ -1,3 +1,4 @@
+#include <cmath>
 #include "shading_complex.h"
 
 // ShadingModule
@@ -13,11 +14,9 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
     NormalMesh meshWSN; sep.process_mesh(meshWSN, wsn);
 
     for ( int i = 0; i < meshWSC.size(); i++ ) {
-        Face<ShadingData> * face = new Face<ShadingData>(meshWSC[i]->size());
+        Face<ShadingData> * face = new Face<ShadingData>();
         for ( int j = 0; j < meshWSC[i]->size(); j++ ) {
-            face->at(j).ws_coord = homogenize(meshWSC[i]->at(j));
-            face->at(j).nd_coord = homogenize(meshNDC[i]->at(j));
-            face->at(j).ws_normal = meshWSN[i]->at(j).normalize();
+            face->push_back( ShadingData( meshWSC[i]->at(j), meshNDC[i]->at(j), meshWSN[i]->at(j) ) );
         }
         this->mesh.push_back(face);
     }
@@ -28,6 +27,37 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
 
 const Mesh<ShadingData>& ShadingModule::get_mesh() const { return mesh; }
 const Material& ShadingModule::get_material() const { return material; }
+
+Color ShadingModule::lighting(const ShadingData& sData, const ShadingComplex& sComp) const {
+    const Vec3 n = sData.ws_normal.transpose();
+    const Vec3 v = sData.ws_coord;
+    const Material material = get_material();
+    const PtrList<PointLight>& lights = sComp.get_light_list();
+    const Vec3 camerapos = sComp.get_camera_position();
+
+    const Color& acolor = material.aColor;
+    const Color& dcolor = material.dColor;
+    const Color& scolor = material.sColor;
+    const double shiny = material.shininess;
+
+    Color diffuse(0.);
+    Color specular(0.);
+    Color ambient(acolor);
+
+    for ( PtrList<PointLight>::const_iterator it = lights.begin(); it != lights.end(); it++ ) {
+        const Vec3 lx = (*it)->position;
+        const Color lc = (*it)->color;
+
+        diffuse += (lc * n.dot( (lx - v).normalize() )).zeroclip();
+
+        double k = n.dot( ( (camerapos - v).normalize() + (lx - v).normalize() ).normalize() );
+        if ( k < 0. ) k = 0.;
+
+        specular += ( Color(lc*std::pow(k, shiny)) ).zeroclip();
+    }
+
+    return Color( ambient + diffuse.oneclip()*dcolor + specular*scolor ).oneclip();
+}
 
 // ShadingComplex
 
@@ -41,3 +71,7 @@ ShadingComplex::ShadingComplex(const Inventor& inv) \
 }
 
 const PtrList<ShadingModule>& ShadingComplex::get_module_list() const { return moduleList; };
+
+const PtrList<PointLight>& ShadingComplex::get_light_list() const { return plList; }
+
+const Vec3& ShadingComplex::get_camera_position() const { return pCamera.get_position(); }

@@ -1,5 +1,31 @@
 #include "inventor.h"
 
+// Color
+
+Color::Color(double x) { (*this)[0] = (*this)[1] = (*this)[2] = x; }
+
+Color::Color(const Vec3& v) : Vec3(v) {}
+
+Color Color::operator* (const Color& c) const {
+    Color result(*this);
+    result[0] += c[0]; result[1] += c[1]; result[2] += c[2];
+    return result;
+}
+
+Color Color::zeroclip() const {
+    Color result(*this);
+    for ( int i = 0; i < 3; i++ )
+        if ( result[i] < 0. ) result[i] = 0.;
+    return result;
+}
+
+Color Color::oneclip() const {
+    Color result(*this);
+    for ( int i = 0; i < 3; i++ )
+        if ( result[i] > 1. ) result[i] = 1.;
+    return result;
+}
+
 // Inventor
 
 Inventor::Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}
@@ -93,10 +119,12 @@ Mat44 PerspectiveCamera::to_left_matrix() const {
                                 * Translation(-pos).to_left_matrix();
 }
 
+const Vec3& PerspectiveCamera::get_position() const { return pos; }
+
 // PointLight
 
-PointLight::PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
-PointLight::PointLight(const PointLight& pl) : location(pl.location), color(pl.color) {}
+PointLight::PointLight(const Vec3& position, const Vec3& color) : position(position), color(color) {}
+PointLight::PointLight(const PointLight& pl) : position(pl.position), color(pl.color) {}
 
 // Separator
 

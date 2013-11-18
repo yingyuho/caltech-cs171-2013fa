@@ -32,6 +32,8 @@ template< typename T > class MeshBuilder;
 typedef MeshBuilder<Vec4> MBCoord;
 typedef MeshBuilder<NVec3> MBNorml;
 
+class Color;
+
 class Inventor; // PerspectiveCamera (PointLight)+ (Separator)+
 class PerspectiveCamera;
 class PointLight;
@@ -52,6 +54,15 @@ template< typename T >
 class MeshBuilder : public MeshProcessor< T, const std::vector<T>& > {
 public:
     typedef std::vector<T> PointMap;
+};
+
+class Color : public Vec3 {
+public:
+    Color(double x = 0.);
+    Color(const Vec3 &);
+    Color operator* (const Color&) const;
+    Color zeroclip() const;
+    Color oneclip() const;
 };
 
 class Inventor \
@@ -92,13 +103,15 @@ public:
     PerspectiveCamera(const PerspectiveCamera&);
 
     virtual Mat44 to_left_matrix() const;
+
+    const Vec3& get_position() const;
 };
 
 class PointLight {
 public:
-    const Vec3 location;
-    const Vec3 color;
-    PointLight(const Vec3& location, const Vec3& color);
+    const Vec3 position;
+    const Color color;
+    PointLight(const Vec3& position, const Vec3& color);
     PointLight(const PointLight&);
 };
 
@@ -139,9 +152,9 @@ public:
 
 class Material {
 public:
-    const Vec3 aColor;
-    const Vec3 dColor;
-    const Vec3 sColor;
+    const Color aColor;
+    const Color dColor;
+    const Color sColor;
     const double shininess;
 
     Material(const Vec3& aColor, const Vec3& dColor, const Vec3& sColor, double shininess);
