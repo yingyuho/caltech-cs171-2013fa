@@ -63,7 +63,7 @@ private:
     PtrList<PointLight> plList;
     PtrList<Separator> sepList;
 public:
-    Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}
+    Inventor(PerspectiveCamera*);
     virtual ~Inventor();
     virtual void feed_param(PointLight*);
     virtual void feed_param(Separator*);
@@ -72,7 +72,7 @@ public:
 
     const PtrList<PointLight>& get_light_list() const;
     const PtrList<Separator>& get_separator_list() const;
-    const PerspectiveCamera& get_camera() const { return *pCamera; }
+    const PerspectiveCamera& get_camera() const;
 
     // returns true if coordIndex and normalIndex are consistent for each separator
     bool validate_index() const;
@@ -88,9 +88,7 @@ private:
 
 public:
     PerspectiveCamera(Vec3 pos, Vec4 orient \
-        , double n, double f, double l, double r, double t, double b) \
-        : pos(pos), axis(Vec3(&(orient[0])).normalize()), rot_angle(orient[3]) \
-        , n(n), f(f), l(l), r(r), t(t), b(b) {}
+    , double n, double f, double l, double r, double t, double b);
 
     virtual Mat44 to_left_matrix() const;
 };
@@ -99,8 +97,8 @@ class PointLight {
 public:
     const Vec3 location;
     const Vec3 color;
-    PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
-    PointLight(const PointLight& pl) : location(pl.location), color(pl.color) {}
+    PointLight(const Vec3& location, const Vec3& color);
+    PointLight(const PointLight&);
 };
 
 class Separator : public MBCoord, public MBNorml, public CoordTransformer {
@@ -112,8 +110,8 @@ private:
     IndexedFaceSet * ifsPtr;
 public:
     Separator(ComboTransform* tPtr, Material * mPtr\
-    , Coordinate3* cPtr, Normal3* nPtr, IndexedFaceSet* iPtr) \
-    : tPtr(tPtr), mPtr(mPtr), coord3Ptr(cPtr), normalPtr(nPtr), ifsPtr(iPtr) {}
+    , Coordinate3* cPtr, Normal3* nPtr, IndexedFaceSet* iPtr);
+
     ~Separator();
 
     virtual Mat44 to_left_matrix() const;

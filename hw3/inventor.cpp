@@ -2,6 +2,8 @@
 
 // Inventor
 
+Inventor::Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}
+
 Inventor::~Inventor() {
     if (pCamera) delete pCamera;
 }
@@ -37,6 +39,8 @@ void Inventor::process_mesh(Mesh<NVec3>& mesh) const {
 
 const PtrList<PointLight>& Inventor::get_light_list() const { return plList; }
 const PtrList<Separator>& Inventor::get_separator_list() const { return sepList; }
+const PerspectiveCamera& Inventor::get_camera() const { return *pCamera; }
+
 
 
 bool Inventor::validate_index() const {
@@ -68,6 +72,11 @@ const std::string Inventor::validate_index_msg() const {
 
 // PerspectiveCamera
 
+PerspectiveCamera(Vec3 pos, Vec4 orient \
+, double n, double f, double l, double r, double t, double b) \
+: pos(pos), axis(Vec3(&(orient[0])).normalize()), rot_angle(orient[3]) \
+, n(n), f(f), l(l), r(r), t(t), b(b) {}
+
 Mat44 PerspectiveCamera::to_left_matrix() const {
     // perspective projection P
     double proj[16] =   { 2*n/(r-l), 0, (r+l)/(r-l), 0 \
@@ -80,7 +89,16 @@ Mat44 PerspectiveCamera::to_left_matrix() const {
                                 * Translation(-pos).to_left_matrix();
 }
 
+// PointLight
+
+PointLight::PointLight(const Vec3& location, const Vec3& color) : location(location), color(color) {}
+PointLight::PointLight(const PointLight& pl) : location(pl.location), color(pl.color) {}
+
 // Separator
+
+Separator::Separator(ComboTransform* tPtr, Material * mPtr\
+, Coordinate3* cPtr, Normal3* nPtr, IndexedFaceSet* iPtr) \
+: tPtr(tPtr), mPtr(mPtr), coord3Ptr(cPtr), normalPtr(nPtr), ifsPtr(iPtr) {}
 
 Separator::~Separator() {
     if (tPtr) delete tPtr;
