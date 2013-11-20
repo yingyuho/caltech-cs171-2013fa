@@ -1,5 +1,44 @@
-template<template<typename,typename> class T>
-std::ostream& Canvas<T>::print_ppm(std::ostream &os) const {
+#include "canvas.h"
+
+Canvas::Canvas(int xRes, int yRes, int maxIntensity, double xMin, double xMax \
+, double yMin, double yMax) throw ( std::invalid_argument )  \
+: xMin(xMin), xMax(xMax), yMin(yMin), yMax(yMax) \
+, xRes(xRes), yRes(yRes), maxIntensity(maxIntensity), length(3*xRes*yRes) {
+
+    // check whether arguments are valid
+    #define CHECK_ARG_POSITIVITY(arg) \
+    if (double(arg)<=0) \
+        throw std::invalid_argument(#arg " must be positive.");
+
+    CHECK_ARG_POSITIVITY((xMax - xMin))
+    CHECK_ARG_POSITIVITY((yMax - yMin))
+    CHECK_ARG_POSITIVITY(xRes)
+    CHECK_ARG_POSITIVITY(yRes)
+    CHECK_ARG_POSITIVITY(maxIntensity)
+
+    pixelData = new int[length];
+    std::fill_n(pixelData, length, 0);
+}
+
+Canvas::~Canvas() {
+    delete[] pixelData;
+}
+
+// accessors
+int& Canvas::at(int x, int y, int c) {
+    return pixelData[ c + 3 * (x + xRes * y) ];
+}
+const int& Canvas::at(int x, int y, int c) const {
+    return pixelData[ c + 3 * (x + xRes * y) ];
+}
+int& Canvas::at(const IntVec2& xy, int c) {
+    return at(xy[0], xy[1], c);
+}
+const int& Canvas::at(const IntVec2& xy, int c) const {
+    return at(xy[0], xy[1], c);
+}
+
+std::ostream& Canvas::print_ppm(std::ostream &os) const {
     os << "P3" << std::endl \
        << xRes << " " << yRes << std::endl \
        << maxIntensity << std::endl << std::endl;
@@ -13,9 +52,8 @@ std::ostream& Canvas<T>::print_ppm(std::ostream &os) const {
     return os;
 }
 
-template< template<typename,typename=std::allocator<IntVec2> > class T >
-void Canvas<T>::draw_pixel(const T<IntVec2>& pList, int r, int g, int b) {
-    typedef typename T<IntVec2>::const_iterator T_IT;
+void Canvas::draw_pixel(const std::vector<IntVec2>& pList, int r, int g, int b) {
+    typedef std::vector<IntVec2>::const_iterator T_IT;
     // for each pixel in the pixelList
     for (T_IT it = pList.begin(); it != pList.end(); it++)
     {
@@ -30,14 +68,15 @@ void Canvas<T>::draw_pixel(const T<IntVec2>& pList, int r, int g, int b) {
     }
 }
 
-template< template<typename,typename=std::allocator<IntVec2> > class T >
-T<IntVec2> Canvas<T>::bresenham(const IntVec2& xy1, const IntVec2& xy2) const {
-    typedef typename T<IntVec2>::iterator T_IT;
+void Canvas::draw_pixel(const std::vector<IntVec2>& pList) { draw_pixel(pList, 255, 255, 255); }
+
+std::vector<IntVec2> Canvas::bresenham(const IntVec2& xy1, const IntVec2& xy2) const {
+    typedef std::vector<IntVec2>::iterator T_IT;
 
     int x1 = xy1[0]; int y1 = xy1[1]; int x2 = xy2[0]; int y2 = xy2[1];
     int xInd = 0; int yInd = 1;
     
-    T<IntVec2> pixelList;
+    std::vector<IntVec2> pixelList;
 
     int temp_int;
     #define SWAP_INT(i1,i2)\
@@ -54,7 +93,7 @@ T<IntVec2> Canvas<T>::bresenham(const IntVec2& xy1, const IntVec2& xy2) const {
 
     int dx = x2 - x1;
 
-    pixelList = T<IntVec2>(1+dx);
+    pixelList = std::vector<IntVec2>(1+dx);
 
     // 1 if slope >= 0, -1 if slope < 0
     const int sign_dy = (y2>=y1) ? 1 : -1;
@@ -77,4 +116,11 @@ T<IntVec2> Canvas<T>::bresenham(const IntVec2& xy1, const IntVec2& xy2) const {
     }
 
     return pixelList;
+}
+
+void Canvas::draw_line(const IntVec2& xy1, const IntVec2& xy2, int r, int g, int b) {
+    draw_pixel(bresenham(xy1,xy2), r, g, b);
+}
+void Canvas::draw_line(const IntVec2& xy1, const IntVec2& xy2) { 
+    draw_line(xy1, xy2, 255, 255, 255);
 }

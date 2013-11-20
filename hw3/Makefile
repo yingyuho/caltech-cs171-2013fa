@@ -4,7 +4,8 @@ PARSER = inventor
 
 OBJECTS = \
 $(PARSER).tab.o $(LEXER).yy.o main.o \
-inventor.o transform.o face.o mesh.o shading_data.o shading_complex.o mesh_utility.o
+canvas.o inventor.o transform.o face.o mesh.o raster.o \
+shading_data.o shading_complex.o mesh_utility.o
 
 SOURCES = *.cpp *.h
 
@@ -42,7 +43,7 @@ mesh_utility.tag: mesh_utility.h mesh.tag
 parser_param.tag: parser_param.h inventor.tag
 	echo > parser_param.tag
 
-canvas.tag: canvas.h canvas.cpp pixel.tag
+canvas.tag: canvas.h pixel.tag
 	echo > canvas.tag
 
 face.tag: face.h matrix.h
@@ -53,6 +54,9 @@ mesh.tag: mesh.h face.tag transform.tag ptr_container.h
 
 pixel.tag: pixel.h matrix.h
 	echo > pixel.tag
+
+raster.tag: raster.h mesh.h
+	echo > raster.tag
 
 shading_data.tag: shading_data.h matrix.h
 	echo > shading_data.tag
@@ -66,6 +70,9 @@ transform.tag: transform.h matrix.h ptr_container.h
 inventor.tag: inventor.h transform.tag mesh_processor.tag ptr_container.h
 	echo > inventor.tag
 
+canvas.o: canvas.cpp canvas.tag
+	$(CC) -c $(CFLAGS) -o $@ $<
+
 face.o: face.cpp face.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -75,10 +82,13 @@ mesh.o: mesh.cpp mesh.tag
 mesh_utility.o: mesh_utility.cpp mesh_utility.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-main.o: main.cpp inventor.tag canvas.tag shading_complex.tag
+main.o: main.cpp inventor.tag canvas.tag raster.tag shading_complex.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 inventor.o: inventor.cpp inventor.tag
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+raster.o: raster.cpp raster.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 shading_data.o: shading_data.cpp shading_data.tag
