@@ -88,6 +88,10 @@ int main(int argc, char* argv[])
 
     for ( PtrList<ShadingModule>::const_iterator it = smList.cbegin(); \
         it != smList.cend(); it++ ) {
+        Illuminator lighter(sComp.get_camera_position(), \
+            sComp.get_lights(), (*it)->get_material());
+
+        
         //cout << (*it)->get_mesh();
     }
 

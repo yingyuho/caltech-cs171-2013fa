@@ -12,6 +12,7 @@
 
 #include <vector>
 #include "mesh.h"
+#include "illuminator.h"
 
 class Raster {
 private:

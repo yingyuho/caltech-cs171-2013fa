@@ -95,11 +95,6 @@ Mat44 PerspectiveCamera::to_left_matrix() const {
 
 const Vec3& PerspectiveCamera::get_position() const { return pos; }
 
-// PointLight
-
-PointLight::PointLight(const Vec3& position, const Vec3& color) : position(position), color(color) {}
-PointLight::PointLight(const PointLight& pl) : position(pl.position), color(pl.color) {}
-
 // Separator
 
 Separator::Separator(ComboTransform* tPtr, Material * mPtr\
@@ -271,15 +266,6 @@ const std::string Separator::validate_index_msg() const {
 
     return "";
 }
-
-// Material
-
-Material::Material(const Vec3& a, const Vec3& d, const Vec3& s, double shininess)\
-: aColor(a), dColor(d), sColor(s), shininess(shininess) {}
-
-
-Material::Material(const Material& m)\
-: aColor(m.aColor), dColor(m.dColor), sColor(m.sColor), shininess(m.shininess) {}
 
 // Coordinate3
 

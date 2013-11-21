@@ -15,7 +15,8 @@
 #include "mesh_processor.h"
 #include "ptr_container.h"
 #include "transform.h"
-#include "color.h"
+#include "point_light.h"
+#include "material.h"
 
 namespace InventorHelper {
     // debug message
@@ -97,14 +98,6 @@ public:
     const Vec3& get_position() const;
 };
 
-class PointLight {
-public:
-    const Vec3 position;
-    const Color<double> color;
-    PointLight(const Vec3& position, const Vec3& color);
-    PointLight(const PointLight&);
-};
-
 class Separator : public MBCoord, public MBNorml, public CoordTransformer {
 private:
     ComboTransform * tPtr;
@@ -138,18 +131,6 @@ public:
     // returns true if get_coord_index() and get_normal_index() are consistent
     bool validate_index() const;
     const std::string validate_index_msg() const;
-};
-
-class Material {
-public:
-    const Color<double> aColor;
-    const Color<double> dColor;
-    const Color<double> sColor;
-    const double shininess;
-
-    Material(const Vec3& aColor, const Vec3& dColor, const Vec3& sColor, double shininess);
-
-    Material(const Material&);
 };
 
 class Coordinate3 : public ParamEater<const Vec3&> {

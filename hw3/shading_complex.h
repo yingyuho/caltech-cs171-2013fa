@@ -25,7 +25,6 @@ public:
     ShadingModule(const PerspectiveCamera&, const Separator&);
     const Mesh<ShadingData>& get_mesh() const;
     const Material& get_material() const;
-    Color<double> lighting(const ShadingData&, const ShadingComplex&) const;
 };
 
 class ShadingComplex {
@@ -36,7 +35,7 @@ private:
 public:
     ShadingComplex(const Inventor&);
     const PtrList<ShadingModule>& get_module_list() const;
-    const PtrList<PointLight>& get_light_list() const;
+    const PtrList<PointLight>& get_lights() const;
     const Vec3& get_camera_position() const;
 };
 
