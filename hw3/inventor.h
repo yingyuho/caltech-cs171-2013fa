@@ -21,8 +21,8 @@
 namespace InventorHelper {
     // debug message
     template<typename T> static void watch(T) {}
-    // template<typename T> static void watch(const T t) { std::cout << t << " "; }
-    // static void watch(const char *s) { std::cout << s; }
+    // template<typename T> static void watch(const T t) { std::cerr << t << " "; }
+    // static void watch(const char *s) { std::cerr << s; }
 }
 
 // A subclass of this takes any number of parameters of type T

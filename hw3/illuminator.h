@@ -25,7 +25,7 @@ private:
 
 public:
 	Illuminator(const Vec3& cameraPos, const PtrList<PointLight>& lights, const Material& material);
-    Color<double> operator() (const Vec3& coord, const NVec3& normal);
+    Color<double> operator() (const Vec3& coord, const NVec3& normal) const;
 };
 
 

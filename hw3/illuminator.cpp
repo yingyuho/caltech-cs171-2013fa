@@ -14,8 +14,8 @@ cameraPos(cp), lightNum(pl.size()), material(mat) {
 	}
 }
 
-Color<double> Illuminator::operator() (const Vec3& coord, const NVec3& normal) {
-    const Vec3  n = normal.transpose();
+Color<double> Illuminator::operator() (const Vec3& coord, const NVec3& normal) const {
+    const Vec3  n = normal.transpose().normalize();
     const Vec3& v = coord;
 
     Color<double> diffuse(0.);
@@ -25,15 +25,15 @@ Color<double> Illuminator::operator() (const Vec3& coord, const NVec3& normal) {
         const Vec3& lx = lightPos[i];
         const Color<double>& lc = lightColor[i];
 
-        diffuse += (lc * n.dot( (lx - v).normalize() )).zeroclip();
+        diffuse += ( lc * n.dot((lx - v).normalize()) ).zeroclip();
 
         double k = n.dot( ( (cameraPos - v).normalize() + (lx - v).normalize() ).normalize() );
         if ( k < 0. ) k = 0.;
 
-        specular += ( Color<double>(lc * std::pow(k, material.shininess)) ).zeroclip();
+        specular += ( lc * std::pow(k, material.shininess) ).zeroclip();
     }
 
-    return Color<double>( \
+    return ( \
     	material.aColor + \
 		diffuse.oneclip() * material.dColor + \
 		specular * material.sColor ).oneclip();

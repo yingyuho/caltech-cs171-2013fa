@@ -2,6 +2,7 @@
 #include <list>
 #include <vector>
 #include <cmath>
+#include <string>
 #include <getopt.h>
 #include "inventor.h"
 #include "canvas.h"
@@ -18,7 +19,8 @@ static double eyelight_str = 0.2;
 int main(int argc, char* argv[])
 {   
     int c;
-    const char* help = " xRes yRes [-eyelight[=strength]] < input.iv";
+    const char* help = \
+    " mode xRes yRes [-eyelight[=strength]] < input.iv\n       mode: 0 = Flat, 1 = Gourand, 2 = Phong";
 
     // parse the options
     while (1) {
@@ -47,26 +49,48 @@ int main(int argc, char* argv[])
         }
     }
 
+    #define ERROR_MSG() \
+    cerr << "Arguments given: "; \
+    while ( optind < argc ) cerr << argv[optind++] << " "; \
+    cerr << endl; \
+    cerr << "Usage: " << argv[0] << help << endl;
+
     // check if all required arguments (xRes and yRes) are present
-    if (argc - optind < 2) {
+    if (argc - optind < 3) {
         cerr << "Usage: " << argv[0] << help << endl;
         return 1;
     }
 
-    // set res = { xRes, yRes }
-    int res[2] = { atoi(argv[optind]), atoi(argv[optind+1]) };
+    int mode;
+    int res[2];
+
+
+    try {
+        // set shading mode
+        mode = stoi(argv[optind]);
+        // set res = { xRes, yRes }
+        res[0] = stoi(argv[optind+1]);
+        res[1] = stoi(argv[optind+2]);
+    } catch (const exception& e) {
+        cerr << e.what() << endl;
+        ERROR_MSG()
+        return 1;
+    }
+
+    if ( mode < 0 || mode > 2 ) {
+        cerr << "Shading mode \"mode\" is out of range." << endl;
+        ERROR_MSG()
+        return 1;
+    }
 
     Canvas * canvas;
 
     // make sure xRes, yRes > 0 so that canvas is successfully built
     try {
         canvas = new Canvas(res[0],res[1]);
-    } catch (const std::invalid_argument& e) {
+    } catch (const exception& e) {
         cerr << e.what() << endl;
-        cerr << "Arguments given: ";
-        while ( optind < argc ) cerr << argv[optind++] << " ";
-        cerr << endl;
-        cerr << "Usage: " << argv[0] << help << endl;
+        ERROR_MSG()
         return 1;
     }
 
@@ -86,60 +110,34 @@ int main(int argc, char* argv[])
     ShadingComplex sComp(*inv);
     const PtrList<ShadingModule>& smList = sComp.get_module_list();
 
+    Raster ras(res[0], res[1]);
+
     for ( PtrList<ShadingModule>::const_iterator it = smList.cbegin(); \
         it != smList.cend(); it++ ) {
+
         Illuminator lighter(sComp.get_camera_position(), \
             sComp.get_lights(), (*it)->get_material());
 
-        
-        //cout << (*it)->get_mesh();
-    }
+        const Mesh<ShadingData>& mesh = (*it)->get_mesh();
 
-
-
-    // retrieve list of polygons (in pixel coordinates) from inventor object
-
-    //PB::VertexType resVec(res);
-    CoordMesh coord_ws;
-    inv->process_mesh(coord_ws);
-    coord_ws.triangulate();
-
-    NormalMesh normal_ws;
-    inv->process_mesh(normal_ws);
-    normal_ws.normalize();
-    normal_ws.triangulate();
-
-    CoordMesh coord_nd(coord_ws);
-    coord_nd.transform(inv->get_camera());
-
-    BackFaceCuller bfc(coord_nd);
-    bfc(coord_ws);
-    bfc(normal_ws);
-
-    PixelMesh pxMesh(coord_nd, res[0], res[1]);
-
-    Raster ras(res[0], res[1]);
-    int ca[6] = {40,80,120,160,200,240};
-    int ci = 0;
-    for ( CoordMesh::CIter it1 = coord_nd.begin(); it1 != coord_nd.end(); it1++ ) {
-        canvas->draw_pixel(ras.raster_plain(**it1),ca[ci%6],ca[ci%6],ca[ci%6]);
-        ci++;
-    }
-
-    /*for ( PixelMesh::CIter it1 = pxMesh.begin(); it1 != pxMesh.end(); it1++ ) {
-        // ignore "faces" with only zero or one vertex
-        if ( (*it1)->size() < 2 ) { continue; }
-
-        // connect p(i) and p(i+1)
-        Face<IntVec2>::CIter it2_1 = (*it1)->begin();
-        for ( Face<IntVec2>::CIter it2_2 = ++((*it1)->begin()); it2_2 != (*it1)->end(); it2_2++ ) {
-            canvas->draw_line(*it2_1,*it2_2);
-            it2_1 = it2_2;
+        for ( Mesh<ShadingData>::CIter it2 = mesh.begin(); it2 != mesh.end(); it2++ ) {
+            switch (mode) {
+                case 0:
+                canvas->draw_pixel( ras.raster_flat(**it2, lighter) );
+                break;
+                case 1:
+                canvas->draw_pixel( ras.raster_gourand(**it2, lighter) );
+                break;
+                case 2:
+                canvas->draw_pixel( ras.raster_phong(**it2, lighter) );
+                break;
+                default:
+                cerr << "Unknown shading mode = " << mode << endl;
+                return 1;
+            }
         }
-
-        // close the polygon by connecting p(n) and p(1)
-        canvas->draw_line(*it2_1,(*it1)->front());
-    }*/
+    
+    }
 
     // send ppm image to stdout
     canvas->print_ppm(cout);

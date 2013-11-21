@@ -18,7 +18,9 @@ class Color : public Matrix<T,3,1> {
 public:
     Color(T x = T(0));
     Color(const Matrix<T,3,1> &);
+    Color operator+ (const Color&) const;
     Color operator* (const Color&) const;
+    Color operator* (const T& x) const;
     Color zeroclip() const;
     Color oneclip() const;
 };
@@ -36,6 +38,24 @@ Color<T> Color<T>::operator* (const Color& c) const {
     Color result(*this);
     result[0] *= c[0]; result[1] *= c[1]; result[2] *= c[2];
     return result;
+}
+
+template< typename T >
+Color<T> Color<T>::operator+ (const Color& c) const {
+    Color result(*this);
+    result[0] += c[0]; result[1] += c[1]; result[2] += c[2];
+    return result;
+}
+
+template< typename T >
+Color<T> Color<T>::operator* (const T& x) const {
+    Matrix<T,3,1> result(*this);
+    return Color(result*x);
+}
+
+template< typename T >
+Color<T> operator* (const T& x, const Color<T> c) {
+    return c*x;
 }
 
 template< typename T >

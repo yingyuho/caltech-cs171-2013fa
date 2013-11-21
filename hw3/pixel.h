@@ -10,23 +10,14 @@
 #ifndef _pixel_h
 #define _pixel_h
 
-#include "matrix.h"
+#include "color.h"
 
-class Pixel {
-private:
-    int _x;
-    int _y;
-    double _z;
-    int _r; int _g; int _b;
+struct Pixel {
 public:
-    Pixel(int x, int y, double z, int r, int g, int b) : _x(x), _y(y), _z(z), _r(r), _g(g), _b(b) {}
-    virtual ~Pixel() {};
-    int x() const { return _x; }
-    int y() const { return _y; }
-    double z() const { return _z; }
-    int r() const { return _r; }
-    int g() const { return _g; }
-    int b() const { return _b; }
+    int x;
+    int y;
+    double z;
+    Color<int> color;
 };
 
 #endif //   _pixel_h

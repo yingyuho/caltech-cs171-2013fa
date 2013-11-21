@@ -22,6 +22,7 @@
 class Canvas {
 private:
     int * pixelData;
+    double * zBuffer;
     const double xMin;
     const double xMax;
     const double yMin;
@@ -29,7 +30,6 @@ private:
     const int xRes;
     const int yRes;
     const int maxIntensity;
-    const int length;
 
     Canvas(const Canvas &);
     Canvas& operator= (const Canvas&);
@@ -51,6 +51,7 @@ public:
     // fill color according to a vector of pixels
     void draw_pixel(const std::vector<IntVec2>& pList, int r, int g, int b);
     void draw_pixel(const std::vector<IntVec2>& pList);
+    void draw_pixel(const std::vector<Pixel>&);
 
 	// output PPM image
 	std::ostream &print_ppm(std::ostream &os) const;

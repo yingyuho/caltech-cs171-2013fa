@@ -3,7 +3,7 @@
 Canvas::Canvas(int xRes, int yRes, int maxIntensity, double xMin, double xMax \
 , double yMin, double yMax) throw ( std::invalid_argument )  \
 : xMin(xMin), xMax(xMax), yMin(yMin), yMax(yMax) \
-, xRes(xRes), yRes(yRes), maxIntensity(maxIntensity), length(3*xRes*yRes) {
+, xRes(xRes), yRes(yRes), maxIntensity(maxIntensity) {
 
     // check whether arguments are valid
     #define CHECK_ARG_POSITIVITY(arg) \
@@ -16,8 +16,11 @@ Canvas::Canvas(int xRes, int yRes, int maxIntensity, double xMin, double xMax \
     CHECK_ARG_POSITIVITY(yRes)
     CHECK_ARG_POSITIVITY(maxIntensity)
 
-    pixelData = new int[length];
-    std::fill_n(pixelData, length, 0);
+    pixelData = new int[3*xRes*yRes];
+    std::fill_n(pixelData, 3*xRes*yRes, 0);
+
+    zBuffer = new double[xRes*yRes];
+    std::fill_n(zBuffer, xRes*yRes, INFINITY);
 }
 
 Canvas::~Canvas() {
@@ -69,6 +72,25 @@ void Canvas::draw_pixel(const std::vector<IntVec2>& pList, int r, int g, int b) 
 }
 
 void Canvas::draw_pixel(const std::vector<IntVec2>& pList) { draw_pixel(pList, 255, 255, 255); }
+
+void Canvas::draw_pixel(const std::vector<Pixel>& pList) {
+    for ( int i = 0; i < pList.size(); i++ ) {    
+        const double z = pList[i].z;
+
+        const int x = pList[i].x;
+        const int y = pList[i].y;
+
+        if (x >= 0 && x < xRes && y >= 0 && y < yRes) {
+            if ( z > 0 && z <= zBuffer[x + xRes*y] ) {
+                zBuffer[x + xRes*y] = z;
+                at(x,y,0) = pList[i].color[0];
+                at(x,y,1) = pList[i].color[1];
+                at(x,y,2) = pList[i].color[2];
+            }
+        }
+
+    }
+}
 
 std::vector<IntVec2> Canvas::bresenham(const IntVec2& xy1, const IntVec2& xy2) const {
     typedef std::vector<IntVec2>::iterator T_IT;
