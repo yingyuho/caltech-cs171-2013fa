@@ -28,35 +28,35 @@ ShadingModule::ShadingModule(const PerspectiveCamera& pc, const Separator& sep) 
 const Mesh<ShadingData>& ShadingModule::get_mesh() const { return mesh; }
 const Material& ShadingModule::get_material() const { return material; }
 
-Color ShadingModule::lighting(const ShadingData& sData, const ShadingComplex& sComp) const {
+Color<double> ShadingModule::lighting(const ShadingData& sData, const ShadingComplex& sComp) const {
     const Vec3 n = sData.ws_normal.transpose();
     const Vec3 v = sData.ws_coord;
     const Material material = get_material();
     const PtrList<PointLight>& lights = sComp.get_light_list();
     const Vec3 camerapos = sComp.get_camera_position();
 
-    const Color& acolor = material.aColor;
-    const Color& dcolor = material.dColor;
-    const Color& scolor = material.sColor;
+    const Color<double>& acolor = material.aColor;
+    const Color<double>& dcolor = material.dColor;
+    const Color<double>& scolor = material.sColor;
     const double shiny = material.shininess;
 
-    Color diffuse(0.);
-    Color specular(0.);
-    Color ambient(acolor);
+    Color<double> diffuse(0.);
+    Color<double> specular(0.);
+    Color<double> ambient(acolor);
 
     for ( PtrList<PointLight>::const_iterator it = lights.begin(); it != lights.end(); it++ ) {
         const Vec3 lx = (*it)->position;
-        const Color lc = (*it)->color;
+        const Color<double> lc = (*it)->color;
 
         diffuse += (lc * n.dot( (lx - v).normalize() )).zeroclip();
 
         double k = n.dot( ( (camerapos - v).normalize() + (lx - v).normalize() ).normalize() );
         if ( k < 0. ) k = 0.;
 
-        specular += ( Color(lc*std::pow(k, shiny)) ).zeroclip();
+        specular += ( Color<double>(lc*std::pow(k, shiny)) ).zeroclip();
     }
 
-    return Color( ambient + diffuse.oneclip()*dcolor + specular*scolor ).oneclip();
+    return Color<double>( ambient + diffuse.oneclip()*dcolor + specular*scolor ).oneclip();
 }
 
 // ShadingComplex

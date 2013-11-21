@@ -30,13 +30,6 @@ public:
 
     Mesh() {}
     Mesh(size_t n) : PtrVector< Face<T> >(n) {}
-    Mesh(const Mesh& x) : PtrVector< Face<T> >(x) {};
-
-    Mesh& operator= (const Mesh& x) {
-        if ( this != &x )
-            PtrVector< Face<T> >::operator=(x);
-        return *this;
-    }
     
     virtual ~Mesh() {};
 
@@ -47,15 +40,14 @@ public:
 class CoordMesh : public Mesh<Vec4> {
 public:
     CoordMesh() {}
-    CoordMesh(const CoordMesh& mesh) : Mesh(mesh) {}
     virtual ~CoordMesh() {}
+
     void transform(const CoordTransformer&);
 };
 
 class NormalMesh : public Mesh<NVec3> {
 public:
     NormalMesh() {}
-    NormalMesh(const NormalMesh& mesh) : Mesh(mesh) {}
     virtual ~NormalMesh() {}
     void normalize();
 };
@@ -65,7 +57,6 @@ public:
     const int xRes;
     const int yRes;
     PixelMesh(int xRes, int yRes) : xRes(xRes), yRes(yRes) {}
-    PixelMesh(const PixelMesh& m) : Mesh(m), xRes(m.xRes), yRes(m.yRes) {}
     PixelMesh(const CoordMesh&, int, int);
     virtual ~PixelMesh() {}
 };

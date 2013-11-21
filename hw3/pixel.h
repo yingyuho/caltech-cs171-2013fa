@@ -29,21 +29,4 @@ public:
     int b() const { return _b; }
 };
 
-// class SimplePixel : public Pixel {
-// private:
-//     int x;
-//     int y;
-//     double z;
-//     int r; int g; int b;
-// public:
-//     SimplePixel(int x, int y, double z, int r, int g, int b) : x(x), y(y), z(z), r(r), g(g), b(b) {}
-//     virtual ~SimplePixel() {}
-//     virtual int x() const { return x; }
-//     virtual int y() const { return y; }
-//     virtual double z() const { return z; }
-//     virtual int r() const { return r; }
-//     virtual int g() const { return g; }
-//     virtual int b() const { return b; }
-// };
-
 #endif //   _pixel_h

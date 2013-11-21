@@ -152,8 +152,8 @@ public:
     // vector dot(A,B) := trace(A.B^T)
     T dot (const Matrix &m) const {
         T x = T();
-        for (matdim_t i = 0; i < R; i++)
-            x += dot_row(&(this->at(i,0)), &(m.at(i,0)));
+        for (matdim_t i = 0; i < R*C; i++)
+            x += (*this)[i] * m[i];
         return x;
     }
 

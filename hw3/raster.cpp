@@ -71,7 +71,7 @@ std::vector<double*> Raster::raster_face(int dataSize, double** dataArray) const
     return result;
 }
 
-std::vector<IntVec2> Raster::operator()(Face<Vec4>& f) const {
+std::vector<IntVec2> Raster::raster_plain(Face<Vec4>& f) const {
     double** dataArray = new double*[3];
 
     for ( int i = 0; i < 3; i++ ) {

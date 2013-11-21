@@ -24,14 +24,12 @@ public:
     NVec3 ws_normal;
     ShadingData();
     ShadingData(const Vec4&, const Vec4&, const NVec3&);
-    ShadingData(const ShadingData&);
 };
 
 class GourandData : public ShadingData {
 public:
 	Vec3 color;
     GourandData();
-    GourandData(const GourandData&);
 };
 
 

@@ -1,31 +1,5 @@
 #include "inventor.h"
 
-// Color
-
-Color::Color(double x) { (*this)[0] = (*this)[1] = (*this)[2] = x; }
-
-Color::Color(const Vec3& v) : Vec3(v) {}
-
-Color Color::operator* (const Color& c) const {
-    Color result(*this);
-    result[0] += c[0]; result[1] += c[1]; result[2] += c[2];
-    return result;
-}
-
-Color Color::zeroclip() const {
-    Color result(*this);
-    for ( int i = 0; i < 3; i++ )
-        if ( result[i] < 0. ) result[i] = 0.;
-    return result;
-}
-
-Color Color::oneclip() const {
-    Color result(*this);
-    for ( int i = 0; i < 3; i++ )
-        if ( result[i] > 1. ) result[i] = 1.;
-    return result;
-}
-
 // Inventor
 
 Inventor::Inventor(PerspectiveCamera* pCamera) : pCamera(pCamera) {}

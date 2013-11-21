@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
     int ca[6] = {40,80,120,160,200,240};
     int ci = 0;
     for ( CoordMesh::CIter it1 = coord_nd.begin(); it1 != coord_nd.end(); it1++ ) {
-        canvas->draw_pixel(ras(**it1),ca[ci%6],ca[ci%6],ca[ci%6]);
+        canvas->draw_pixel(ras.raster_plain(**it1),ca[ci%6],ca[ci%6],ca[ci%6]);
         ci++;
     }
 

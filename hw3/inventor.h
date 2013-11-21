@@ -15,6 +15,7 @@
 #include "mesh_processor.h"
 #include "ptr_container.h"
 #include "transform.h"
+#include "color.h"
 
 namespace InventorHelper {
     // debug message
@@ -31,8 +32,6 @@ template< typename T > class ParamEater;
 template< typename T > class MeshBuilder;
 typedef MeshBuilder<Vec4> MBCoord;
 typedef MeshBuilder<NVec3> MBNorml;
-
-class Color;
 
 class Inventor; // PerspectiveCamera (PointLight)+ (Separator)+
 class PerspectiveCamera;
@@ -54,15 +53,6 @@ template< typename T >
 class MeshBuilder : public MeshProcessor< T, const std::vector<T>& > {
 public:
     typedef std::vector<T> PointMap;
-};
-
-class Color : public Vec3 {
-public:
-    Color(double x = 0.);
-    Color(const Vec3 &);
-    Color operator* (const Color&) const;
-    Color zeroclip() const;
-    Color oneclip() const;
 };
 
 class Inventor \
@@ -110,7 +100,7 @@ public:
 class PointLight {
 public:
     const Vec3 position;
-    const Color color;
+    const Color<double> color;
     PointLight(const Vec3& position, const Vec3& color);
     PointLight(const PointLight&);
 };
@@ -152,9 +142,9 @@ public:
 
 class Material {
 public:
-    const Color aColor;
-    const Color dColor;
-    const Color sColor;
+    const Color<double> aColor;
+    const Color<double> dColor;
+    const Color<double> sColor;
     const double shininess;
 
     Material(const Vec3& aColor, const Vec3& dColor, const Vec3& sColor, double shininess);

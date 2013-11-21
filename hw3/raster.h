@@ -31,7 +31,8 @@ public:
     double ndc_to_px_x(double) const;
     double ndc_to_px_y(double) const;
 
-    std::vector<IntVec2> operator() (Face<Vec4>&) const;
+    std::vector<IntVec2> raster_plain(Face<Vec4>&) const;
+    std::vector<IntVec2> raster_phong(Face<Vec4>&) const;
 };
 
 

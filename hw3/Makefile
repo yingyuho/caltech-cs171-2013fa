@@ -34,6 +34,9 @@ $(PARSER).tab.o: $(PARSER).tab.cpp inventor.tag parser_param.tag
 $(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.tag parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+color.tag: color.h matrix.h
+	echo > color.tag
+
 mesh_processor.tag: mesh_processor.h mesh.tag
 	echo > mesh_processor.tag
 
@@ -67,7 +70,7 @@ shading_complex.tag: shading_complex.h shading_data.tag inventor.tag mesh_utilit
 transform.tag: transform.h matrix.h ptr_container.h
 	echo > transform.tag
 
-inventor.tag: inventor.h transform.tag mesh_processor.tag ptr_container.h
+inventor.tag: inventor.h transform.tag mesh_processor.tag color.tag ptr_container.h
 	echo > inventor.tag
 
 canvas.o: canvas.cpp canvas.tag

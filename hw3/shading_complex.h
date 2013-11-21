@@ -25,7 +25,7 @@ public:
     ShadingModule(const PerspectiveCamera&, const Separator&);
     const Mesh<ShadingData>& get_mesh() const;
     const Material& get_material() const;
-    Color lighting(const ShadingData&, const ShadingComplex&) const;
+    Color<double> lighting(const ShadingData&, const ShadingComplex&) const;
 };
 
 class ShadingComplex {
