@@ -153,7 +153,7 @@ std::vector<Pixel> Raster::raster_flat(const Face<ShadingData>& f, const Illumin
     return result;
 }
 
-std::vector<Pixel> Raster::raster_gourand(const Face<ShadingData>& f, const Illuminator& illu) const {
+std::vector<Pixel> Raster::raster_gouraud(const Face<ShadingData>& f, const Illuminator& illu) const {
 
     double** dataArray = new double*[3];
 

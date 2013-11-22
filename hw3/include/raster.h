@@ -40,7 +40,7 @@ public:
 
     std::vector<Pixel> raster_plain(const Face<Vec4>&, const Color<double>& = Color<double>(1.)) const;
     std::vector<Pixel> raster_flat(const Face<ShadingData>&, const Illuminator&) const;
-    std::vector<Pixel> raster_gourand(const Face<ShadingData>&, const Illuminator&) const;
+    std::vector<Pixel> raster_gouraud(const Face<ShadingData>&, const Illuminator&) const;
     std::vector<Pixel> raster_phong(const Face<ShadingData>&, const Illuminator&) const;
 };
 

@@ -38,7 +38,7 @@ Parameters
 mode            An integer from 0 to 2 to select the shading mode
 
                 0: Flat shading
-                1: Gourand shading
+                1: Gouraud shading
                 2: Phong shading
 
 xRes            The width of the output image. Must be a positive integer.

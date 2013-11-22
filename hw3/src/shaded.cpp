@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {   
     int c;
     const char* help = \
-    " mode xRes yRes [-eyelight[=strength]] < input.iv\n       mode: 0 = Flat, 1 = Gourand, 2 = Phong";
+    " mode xRes yRes [-eyelight[=strength]] < input.iv\n       mode: 0 = Flat, 1 = Gouraud, 2 = Phong";
 
     // parse the options
     while (1) {
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
                 canvas->draw_pixel( ras.raster_flat(**it2, lighter) );
                 break;
                 case 1:
-                canvas->draw_pixel( ras.raster_gourand(**it2, lighter) );
+                canvas->draw_pixel( ras.raster_gouraud(**it2, lighter) );
                 break;
                 case 2:
                 canvas->draw_pixel( ras.raster_phong(**it2, lighter) );
