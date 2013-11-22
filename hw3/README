@@ -1,0 +1,86 @@
+===========
+Description
+===========
+
+This is a 3-D shaded convex polygon renderer that reads input in OpenInventor 
+format from stdin and writes the image in the PPM format to stdout.
+
+===========
+Compilation
+===========
+
+"make" gives the program "shaded"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------
+Format
+------
+
+./shaded (mode) (xRes) (yRes) [-eyelight[=(strength)]] < (input-data) > convert - (output-file)
+
+Parameters are surrounded by ( ) and things inside [ ] are optional.
+
+-------
+Example
+-------
+
+./shaded 2 500 500 -eyelight=0.5 < ../hw3-data/cube3.iv | convert - cube3.jpg
+
+----------
+Parameters
+----------
+
+mode            An integer from 0 to 2 to select the shading mode
+
+                0: Flat shading
+                1: Gourand shading
+                2: Phong shading
+
+xRes            The width of the output image. Must be a positive integer.
+
+yRes            The height of the output image. Must be a positive integer.
+
+-eyelight       Add a dim white light near the camera. Default strength is 0.2.
+
+strength        The intensity of the eye light is the average intensity of other
+                point lights in the scene multiplied by this number.
+
+                If there are no point lights in the scene, this number sets 
+                the absolute intensity of the eye light.
+
+                Must be a real number.
+
+input-data      Input file in Open Inventor format.
+
+output-file     Output file with the format automatically selected by the extension.
+                Common extensions include jpg and png.
+
+================
+Triangle Borders
+================
+
+I implemented the triangle rasterization algorithm described in
+Shirley and Marschner, Fundamentals of Computer Graphics, 3rd ed, p.168-169
+to make sure that pixels on adjacent triangle borders are almost always painted exactly once.
+
+Double painting is highly unlikely without knowing the parameters I use.
+
+No painting could happen if there is a triangle with area < 1E-4 in screen coordinates yet
+it happens to contain one integer point.
+
+For implementation, see the method Raster::raster_face in src/raster.cpp.
+
+========================
+OpenInventor File Format
+========================
+
+For this assignment, see
+
+http://courses.cms.caltech.edu/cs171/assignments/hw2.html
+
+http://courses.cms.caltech.edu/cs171/assignments/hw3.html

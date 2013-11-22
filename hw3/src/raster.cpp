@@ -18,35 +18,49 @@ double Raster::f(double xa, double ya, double xb, double yb, double x, double y)
 }
 
 std::vector<double*> Raster::raster_face(int dataSize, double** dataArray) const {
+    // the 1st dimension of dataArray is 3 because the mesh must be triangulated
     const int A_SIZE = 3;
 
     std::vector<double*> result;
+
+    // the 2nd dimension of dataArray > 2 because at least x, y in NDC must be given
     if ( dataSize < 2 ) return result;
 
+    // get x, y of vertices in NDC for later convenience
     const double x0 = ndc_to_px_x(dataArray[0][0]);
     const double y0 = ndc_to_px_y(dataArray[0][1]);
     const double x1 = ndc_to_px_x(dataArray[1][0]);
     const double y1 = ndc_to_px_y(dataArray[1][1]);
     const double x2 = ndc_to_px_x(dataArray[2][0]);
     const double y2 = ndc_to_px_y(dataArray[2][1]);
+
+    // tie breaker for points lying exactly on lines
     const double xRef = 1.4142;
     const double yRef = 2.7183;
 
+    // get the bounding box
     int xMin = (int) floor( (x0<x1)?( (x0<x2)?x0:x2 ):( (x1<x2)?x1:x2 ) );
     int xMax = (int) ceil ( (x0>x1)?( (x0>x2)?x0:x2 ):( (x1>x2)?x1:x2 ) );
     int yMin = (int) floor( (y0<y1)?( (y0<y2)?y0:y2 ):( (y1<y2)?y1:y2 ) );
     int yMax = (int) ceil ( (y0>y1)?( (y0>y2)?y0:y2 ):( (y1>y2)?y1:y2 ) );
+
+    // clip the bounding box by dimensions of output image
     xMin = (xMin >= 0) ? xMin : 0; xMax = (xMax < xRes) ? xMax : xRes - 1;
     yMin = (yMin >= 0) ? yMin : 0; yMax = (yMax < yRes) ? yMax : yRes - 1;
 
+    // note that f012 = f120 = f201 except float point errors
     const double f012 = f(x0,y0,x1,y1,x2,y2);
 
+    // ignore degenerate triangles
     if ( fabs(f012) < .0001 ) return result;
+
+    // tie breaker for points lying exactly on lines
     bool aRef = (f(x1,y1,x2,y2,xRef,yRef) * f012) >= 0;
     bool bRef = (f(x2,y2,x0,y0,xRef,yRef) * f012) >= 0;
     bool cRef = (f(x0,y0,x1,y1,xRef,yRef) * f012) >= 0;
 
     for ( int y = yMin; y <= yMax; y++ ) for ( int x = xMin; x <= xMax; x++ ) {
+        // interpolating parameters
         double a = f(x1,y1,x2,y2,x,y) / f012;
         double b = f(x2,y2,x0,y0,x,y) / f012;
         double c = f(x0,y0,x1,y1,x,y) / f012;

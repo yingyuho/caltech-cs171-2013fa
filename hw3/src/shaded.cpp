@@ -107,19 +107,23 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // convert Inventor to ShadingComplex
     ShadingComplex sComp(*inv);
     const PtrList<ShadingModule>& smList = sComp.get_module_list();
 
+    // rasterization machine
     Raster ras(res[0], res[1]);
 
     for ( PtrList<ShadingModule>::const_iterator it = smList.cbegin(); \
         it != smList.cend(); it++ ) {
 
+        // lighting machine for each separator
         Illuminator lighter(sComp.get_camera_position(), \
-            sComp.get_lights(), (*it)->get_material());
+            sComp.get_lights(), (*it)->get_material(), eyelight_flag, eyelight_str);
 
         const Mesh<ShadingData>& mesh = (*it)->get_mesh();
 
+        // combine rasterization and lighting machines with differet modes
         for ( Mesh<ShadingData>::CIter it2 = mesh.begin(); it2 != mesh.end(); it2++ ) {
             switch (mode) {
                 case 0:

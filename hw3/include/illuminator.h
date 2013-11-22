@@ -24,7 +24,8 @@ private:
     std::vector< Color<double> > lightColor;
 
 public:
-	Illuminator(const Vec3& cameraPos, const PtrList<PointLight>& lights, const Material& material);
+	Illuminator(const Vec3& cameraPos, const PtrList<PointLight>& lights, \
+		const Material& material, bool eyeLightFlag = false, double eyeLightStr = 0.2);
     Color<double> operator() (const Vec3& coord, const NVec3& normal) const;
 };
 
