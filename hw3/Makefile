@@ -3,16 +3,17 @@ LEXER = inventor
 PARSER = inventor
 
 OBJECTS = \
-$(PARSER).tab.o $(LEXER).yy.o main.o \
-canvas.o inventor.o transform.o face.o mesh.o raster.o \
-shading_data.o shading_complex.o mesh_utility.o \
-point_light.o material.o illuminator.o
-
-SOURCES = *.cpp *.h
+obj/$(PARSER).tab.o 	obj/$(LEXER).yy.o \
+obj/canvas.o 			obj/face.o 			obj/illuminator.o 		obj/inventor.o\
+obj/shaded.o 			obj/material.o 		obj/mesh.o 				obj/mesh_utility.o \
+obj/point_light.o 		obj/raster.o 		obj/shading_data.o \
+obj/shading_complex.o 	obj/transform.o \
 
 CC = g++
 LD = g++
-CFLAGS = -O0 -Wno-tautological-compare
+IN = include
+PC = parser_code
+CFLAGS = -O2 -Wno-tautological-compare -I./$(IN)
 LDFLAGS = 
 
 all: $(PRG)
@@ -21,108 +22,106 @@ $(PRG): $(OBJECTS)
 	$(LD) $(LDFLAGS) $(CFLAGS) -o $(PRG) $^
 
 clean:
-	rm -f *.o *.yy.cpp *.tab.cpp *.tab.hpp *.tag
+	rm -f obj/*.o $(PC)/*.* tmp/*.*
 
-$(PARSER).tab.cpp $(PARSER).tab.hpp: $(PARSER).ypp
-	bison -d $(PARSER).ypp
+$(PC)/$(PARSER).tab.cpp $(PC)/$(PARSER).tab.hpp: src/$(PARSER).ypp
+	bison -d src/$(PARSER).ypp -o $(PC)/$(PARSER).tab.cpp
 
-$(LEXER).yy.cpp: $(LEXER).lex
-	flex -+ -o $(LEXER).yy.cpp $(LEXER).lex
+$(PC)/$(LEXER).yy.cpp: src/$(LEXER).lex
+	flex -+ -o $(PC)/$(LEXER).yy.cpp src/$(LEXER).lex
 
-$(PARSER).tab.o: $(PARSER).tab.cpp inventor.tag parser_param.tag
+obj/$(PARSER).tab.o: $(PC)/$(PARSER).tab.cpp tmp/inventor.tag tmp/parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(LEXER).yy.o: $(LEXER).yy.cpp $(PARSER).tab.hpp inventor.tag parser_param.tag
+obj/$(LEXER).yy.o: $(PC)/$(LEXER).yy.cpp $(PC)/$(PARSER).tab.hpp tmp/inventor.tag tmp/parser_param.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-color.tag: color.h matrix.h
-	echo > color.tag
+tmp/color.tag: $(IN)/color.h $(IN)/matrix.h
+	echo > tmp/color.tag
 
-mesh_processor.tag: mesh_processor.h mesh.tag
-	echo > mesh_processor.tag
+tmp/mesh_processor.tag: $(IN)/mesh_processor.h tmp/mesh.tag
+	echo > tmp/mesh_processor.tag
 
-mesh_utility.tag: mesh_utility.h mesh.tag
-	echo > mesh_utility.tag
+tmp/mesh_utility.tag: $(IN)/mesh_utility.h tmp/mesh.tag
+	echo > tmp/mesh_utility.tag
 
-parser_param.tag: parser_param.h inventor.tag
-	echo > parser_param.tag
+tmp/parser_param.tag: $(IN)/parser_param.h tmp/inventor.tag
+	echo > tmp/parser_param.tag
 
-canvas.tag: canvas.h pixel.tag matrix.h
-	echo > canvas.tag
+tmp/canvas.tag: $(IN)/canvas.h tmp/pixel.tag $(IN)/matrix.h
+	echo > tmp/canvas.tag
 
-face.tag: face.h matrix.h
-	echo > face.tag
+tmp/face.tag: $(IN)/face.h $(IN)/matrix.h
+	echo > tmp/face.tag
 
-illuminator.tag: illuminator.h point_light.h material.h ptr_container.h
-	echo > illuminator.tag
+tmp/illuminator.tag: $(IN)/illuminator.h $(IN)/point_light.h $(IN)/material.h $(IN)/ptr_container.h
+	echo > tmp/illuminator.tag
 
-material.tag: material.h color.tag
-	echo > material.tag
+tmp/material.tag: $(IN)/material.h tmp/color.tag
+	echo > tmp/material.tag
 
-mesh.tag: mesh.h face.tag transform.tag ptr_container.h
-	echo > mesh.tag
+tmp/mesh.tag: $(IN)/mesh.h tmp/face.tag tmp/transform.tag $(IN)/ptr_container.h
+	echo > tmp/mesh.tag
 
-pixel.tag: pixel.h color.tag
-	echo > pixel.tag
+tmp/pixel.tag: $(IN)/pixel.h tmp/color.tag
+	echo > tmp/pixel.tag
 
-point_light.tag: point_light.h color.tag
-	echo > point_light.tag
+tmp/point_light.tag: $(IN)/point_light.h tmp/color.tag
+	echo > tmp/point_light.tag
 
-raster.tag: raster.h mesh.h shading_data.tag
-	echo > raster.tag
+tmp/raster.tag: $(IN)/raster.h $(IN)/face.h tmp/shading_data.tag
+	echo > tmp/raster.tag
 
-shading_data.tag: shading_data.h matrix.h
-	echo > shading_data.tag
+tmp/shading_data.tag: $(IN)/shading_data.h $(IN)/matrix.h
+	echo > tmp/shading_data.tag
 
-shading_complex.tag: shading_complex.h shading_data.tag inventor.tag mesh_utility.tag
-	echo > shading_complex.tag
+tmp/shading_complex.tag: $(IN)/shading_complex.h tmp/shading_data.tag tmp/inventor.tag tmp/mesh_utility.tag
+	echo > tmp/shading_complex.tag
 
-transform.tag: transform.h matrix.h ptr_container.h
-	echo > transform.tag
+tmp/transform.tag: $(IN)/transform.h $(IN)/matrix.h $(IN)/ptr_container.h
+	echo > tmp/transform.tag
 
-inventor.tag: inventor.h transform.tag mesh_processor.tag point_light.tag ptr_container.h material.tag
-	echo > inventor.tag
+tmp/inventor.tag: $(IN)/inventor.h tmp/transform.tag tmp/mesh_processor.tag tmp/point_light.tag $(IN)/ptr_container.h tmp/material.tag
+	echo > tmp/inventor.tag
 
-canvas.o: canvas.cpp canvas.tag
+obj/canvas.o: src/canvas.cpp tmp/canvas.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-face.o: face.cpp face.tag
+obj/face.o: src/face.cpp tmp/face.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-illuminator.o: illuminator.cpp illuminator.tag
+obj/illuminator.o: src/illuminator.cpp tmp/illuminator.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-mesh.o: mesh.cpp mesh.tag
+obj/mesh.o: src/mesh.cpp tmp/mesh.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-mesh_utility.o: mesh_utility.cpp mesh_utility.tag
+obj/mesh_utility.o: src/mesh_utility.cpp tmp/mesh_utility.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-main.o: main.cpp inventor.tag canvas.tag raster.tag shading_complex.tag
+obj/shaded.o: src/shaded.cpp tmp/inventor.tag tmp/canvas.tag tmp/raster.tag tmp/shading_complex.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-material.o: material.cpp material.tag
+obj/material.o: src/material.cpp tmp/material.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-point_light.o: point_light.cpp point_light.tag
+obj/point_light.o: src/point_light.cpp tmp/point_light.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-inventor.o: inventor.cpp inventor.tag
+obj/inventor.o: src/inventor.cpp tmp/inventor.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-raster.o: raster.cpp raster.tag illuminator.tag face.tag pixel.tag
+obj/raster.o: src/raster.cpp tmp/raster.tag tmp/illuminator.tag tmp/face.tag tmp/pixel.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-shading_data.o: shading_data.cpp shading_data.tag
+obj/shading_data.o: src/shading_data.cpp tmp/shading_data.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-shading_complex.o: shading_complex.cpp shading_complex.tag
+obj/shading_complex.o: src/shading_complex.cpp tmp/shading_complex.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-transform.o: transform.cpp transform.tag
+obj/transform.o: src/transform.cpp tmp/transform.tag
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-#.cpp.o: $(HEADERS)
-#   g++ -c $(CFLAGS) -o $@ $<
 
 .PHONY: all clean

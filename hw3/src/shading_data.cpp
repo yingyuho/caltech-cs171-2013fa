@@ -11,7 +11,3 @@ std::ostream& operator<<(std::ostream& os, const ShadingData& x) {
     os << x.ws_coord.transpose() << x.nd_coord.transpose() << x.ws_normal << std::endl;
     return os;
 }
-
-// GourandData
-
-GourandData::GourandData() : ShadingData(), color(0.) {}

@@ -25,6 +25,7 @@ Canvas::Canvas(int xRes, int yRes, int maxIntensity, double xMin, double xMax \
 
 Canvas::~Canvas() {
     delete[] pixelData;
+    delete[] zBuffer;
 }
 
 // accessors

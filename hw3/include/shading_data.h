@@ -13,9 +13,6 @@
 #include "matrix.h"
 
 class ShadingData;
-typedef ShadingData FlatData;
-typedef ShadingData PhongData;
-class GourandData;
 
 class ShadingData {
 public:
@@ -25,13 +22,6 @@ public:
     ShadingData();
     ShadingData(const Vec4&, const Vec4&, const NVec3&);
 };
-
-class GourandData : public ShadingData {
-public:
-	Vec3 color;
-    GourandData();
-};
-
 
 std::ostream& operator<<(std::ostream&, const ShadingData&);
 
