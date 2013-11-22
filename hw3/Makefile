@@ -24,103 +24,112 @@ $(PRG): $(OBJECTS)
 clean:
 	rm -f obj/*.o $(PC)/*.* tmp/*.*
 
-$(PC)/$(PARSER).tab.cpp $(PC)/$(PARSER).tab.hpp: src/$(PARSER).ypp
+obj:
+	mkdir obj
+
+tmp:
+	mkdir tmp
+
+$(PC):
+	mkdir $(PC)
+
+$(PC)/$(PARSER).tab.cpp $(PC)/$(PARSER).tab.hpp: src/$(PARSER).ypp $(PC)
 	bison -d src/$(PARSER).ypp -o $(PC)/$(PARSER).tab.cpp
 
-$(PC)/$(LEXER).yy.cpp: src/$(LEXER).lex
+$(PC)/$(LEXER).yy.cpp: src/$(LEXER).lex $(PC)
 	flex -+ -o $(PC)/$(LEXER).yy.cpp src/$(LEXER).lex
 
-obj/$(PARSER).tab.o: $(PC)/$(PARSER).tab.cpp tmp/inventor.tag tmp/parser_param.tag
+obj/$(PARSER).tab.o: $(PC)/$(PARSER).tab.cpp tmp/inventor.tag tmp/parser_param.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/$(LEXER).yy.o: $(PC)/$(LEXER).yy.cpp $(PC)/$(PARSER).tab.hpp tmp/inventor.tag tmp/parser_param.tag
+obj/$(LEXER).yy.o: $(PC)/$(LEXER).yy.cpp $(PC)/$(PARSER).tab.hpp tmp/inventor.tag tmp/parser_param.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-tmp/color.tag: $(IN)/color.h $(IN)/matrix.h
+tmp/color.tag: $(IN)/color.h $(IN)/matrix.h tmp
 	echo > tmp/color.tag
 
-tmp/mesh_processor.tag: $(IN)/mesh_processor.h tmp/mesh.tag
+tmp/mesh_processor.tag: $(IN)/mesh_processor.h tmp/mesh.tag tmp
 	echo > tmp/mesh_processor.tag
 
-tmp/mesh_utility.tag: $(IN)/mesh_utility.h tmp/mesh.tag
+tmp/mesh_utility.tag: $(IN)/mesh_utility.h tmp/mesh.tag tmp
 	echo > tmp/mesh_utility.tag
 
-tmp/parser_param.tag: $(IN)/parser_param.h tmp/inventor.tag
+tmp/parser_param.tag: $(IN)/parser_param.h tmp/inventor.tag tmp
 	echo > tmp/parser_param.tag
 
-tmp/canvas.tag: $(IN)/canvas.h tmp/pixel.tag $(IN)/matrix.h
+tmp/canvas.tag: $(IN)/canvas.h tmp/pixel.tag $(IN)/matrix.h tmp
 	echo > tmp/canvas.tag
 
-tmp/face.tag: $(IN)/face.h $(IN)/matrix.h
+tmp/face.tag: $(IN)/face.h $(IN)/matrix.h tmp
 	echo > tmp/face.tag
 
-tmp/illuminator.tag: $(IN)/illuminator.h $(IN)/point_light.h $(IN)/material.h $(IN)/ptr_container.h
+tmp/illuminator.tag: $(IN)/illuminator.h $(IN)/point_light.h $(IN)/material.h $(IN)/ptr_container.h tmp
 	echo > tmp/illuminator.tag
 
-tmp/material.tag: $(IN)/material.h tmp/color.tag
+tmp/material.tag: $(IN)/material.h tmp/color.tag tmp
 	echo > tmp/material.tag
 
-tmp/mesh.tag: $(IN)/mesh.h tmp/face.tag tmp/transform.tag $(IN)/ptr_container.h
+tmp/mesh.tag: $(IN)/mesh.h tmp/face.tag tmp/transform.tag $(IN)/ptr_container.h tmp
 	echo > tmp/mesh.tag
 
-tmp/pixel.tag: $(IN)/pixel.h tmp/color.tag
+tmp/pixel.tag: $(IN)/pixel.h tmp/color.tag tmp
 	echo > tmp/pixel.tag
 
-tmp/point_light.tag: $(IN)/point_light.h tmp/color.tag
+tmp/point_light.tag: $(IN)/point_light.h tmp/color.tag tmp
 	echo > tmp/point_light.tag
 
-tmp/raster.tag: $(IN)/raster.h $(IN)/face.h tmp/shading_data.tag
+tmp/raster.tag: $(IN)/raster.h $(IN)/face.h tmp/shading_data.tag tmp
 	echo > tmp/raster.tag
 
-tmp/shading_data.tag: $(IN)/shading_data.h $(IN)/matrix.h
+tmp/shading_data.tag: $(IN)/shading_data.h $(IN)/matrix.h tmp
 	echo > tmp/shading_data.tag
 
-tmp/shading_complex.tag: $(IN)/shading_complex.h tmp/shading_data.tag tmp/inventor.tag tmp/mesh_utility.tag
+tmp/shading_complex.tag: $(IN)/shading_complex.h tmp/shading_data.tag tmp/inventor.tag tmp/mesh_utility.tag tmp
 	echo > tmp/shading_complex.tag
 
-tmp/transform.tag: $(IN)/transform.h $(IN)/matrix.h $(IN)/ptr_container.h
+tmp/transform.tag: $(IN)/transform.h $(IN)/matrix.h $(IN)/ptr_container.h tmp
 	echo > tmp/transform.tag
 
-tmp/inventor.tag: $(IN)/inventor.h tmp/transform.tag tmp/mesh_processor.tag tmp/point_light.tag $(IN)/ptr_container.h tmp/material.tag
+tmp/inventor.tag: $(IN)/inventor.h tmp/transform.tag tmp/mesh_processor.tag tmp/point_light.tag $(IN)/ptr_container.h tmp/material.tag tmp
 	echo > tmp/inventor.tag
 
-obj/canvas.o: src/canvas.cpp tmp/canvas.tag
+obj/canvas.o: src/canvas.cpp tmp/canvas.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/face.o: src/face.cpp tmp/face.tag
+obj/face.o: src/face.cpp tmp/face.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/illuminator.o: src/illuminator.cpp tmp/illuminator.tag
+obj/illuminator.o: src/illuminator.cpp tmp/illuminator.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/mesh.o: src/mesh.cpp tmp/mesh.tag
+obj/mesh.o: src/mesh.cpp tmp/mesh.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/mesh_utility.o: src/mesh_utility.cpp tmp/mesh_utility.tag
+obj/mesh_utility.o: src/mesh_utility.cpp tmp/mesh_utility.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/shaded.o: src/shaded.cpp tmp/inventor.tag tmp/canvas.tag tmp/raster.tag tmp/shading_complex.tag
+obj/shaded.o: src/shaded.cpp tmp/inventor.tag tmp/canvas.tag tmp/raster.tag tmp/shading_complex.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/material.o: src/material.cpp tmp/material.tag
+obj/material.o: src/material.cpp tmp/material.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/point_light.o: src/point_light.cpp tmp/point_light.tag
+obj/point_light.o: src/point_light.cpp tmp/point_light.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/inventor.o: src/inventor.cpp tmp/inventor.tag
+obj/inventor.o: src/inventor.cpp tmp/inventor.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/raster.o: src/raster.cpp tmp/raster.tag tmp/illuminator.tag tmp/face.tag tmp/pixel.tag
+obj/raster.o: src/raster.cpp tmp/raster.tag tmp/illuminator.tag tmp/face.tag tmp/pixel.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/shading_data.o: src/shading_data.cpp tmp/shading_data.tag
+obj/shading_data.o: src/shading_data.cpp tmp/shading_data.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/shading_complex.o: src/shading_complex.cpp tmp/shading_complex.tag
+obj/shading_complex.o: src/shading_complex.cpp tmp/shading_complex.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-obj/transform.o: src/transform.cpp tmp/transform.tag
+obj/transform.o: src/transform.cpp tmp/transform.tag obj
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 
