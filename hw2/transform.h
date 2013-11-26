@@ -17,6 +17,8 @@
 #include <typeinfo>
 #include "matrix.h"
 
+class Mat44Maker;
+
 // pure abstract base class for invertible transforms
 class Transform;
 
@@ -27,6 +29,12 @@ class Rotation;
 class ScaleFactor;
 
 //class NonTRSBlockException;
+
+class Mat44Maker {
+public:
+    virtual ~Mat44Maker() {}
+    virtual Mat44 to_matrix() const = 0 ;
+};
 
 class Transform : public Mat44Maker {
 public:

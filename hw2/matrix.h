@@ -16,19 +16,18 @@
 
 typedef unsigned int matdim_t;
 
-template<typename T, matdim_t R, matdim_t C>
+template< typename T, matdim_t R, matdim_t C >
 class Matrix;
 
+template< typename T, matdim_t R >
+Matrix<T,R-1,1> homogenize(const Matrix<T,R,1>& v);
+
 typedef Matrix<double,4,4> Mat44;
+typedef Matrix<double,3,3> Mat33;
 typedef Matrix<double,3,1> Vec3;
 typedef Matrix<double,4,1> Vec4;
+typedef Matrix<double,1,3> NVec3;
 typedef Matrix<int,2,1> IntVec2;
-
-class Mat44Maker {
-public:
-    virtual ~Mat44Maker() {}
-    virtual Mat44 to_matrix() const = 0;
-};
 
 class MatrixException { public: virtual ~MatrixException() {} };
 
@@ -54,10 +53,13 @@ public:
 template<typename T, matdim_t R, matdim_t C>
 class Matrix {
 private:
+    typedef T ElementType;
+
     T array[R*C];
 
     void copy_array(T *target, const T *source) {
-    	std::copy_n(source, R*C, target);
+        for ( int i = 0; i < R*C; i++ )
+            target[i] = source[i];
     }
 
     // fill the main diagonal with given scalar
@@ -151,8 +153,8 @@ public:
     // vector dot(A,B) := trace(A.B^T)
     T dot (const Matrix &m) const {
         T x = T();
-        for (matdim_t i = 0; i < R; i++)
-            x += dot_row(&(this->at(i,0)), &(m.at(i,0)));
+        for (matdim_t i = 0; i < R*C; i++)
+            x += (*this)[i] * m[i];
         return x;
     }
 
@@ -241,6 +243,14 @@ public:
         return matrix_inv;
     }
 };
+
+// homogenize a vector
+
+template< typename T, matdim_t R >
+Matrix<T,R-1,1> homogenize(const Matrix<T,R,1>& v) {
+    Matrix<T,R-1,1> v2(&(v[0]));
+    return v2 / v[R-1];
+}
 
 // left multiplication by a scalar
 template<typename T, matdim_t R, matdim_t C>

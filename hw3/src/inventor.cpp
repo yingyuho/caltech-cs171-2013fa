@@ -1,4 +1,5 @@
 #include "inventor.h"
+#include <cstdio>
 
 // Inventor
 
@@ -319,6 +320,7 @@ void IndexedFaceSet::process_mesh(Mesh<T>& mesh, const std::vector<T>& pMap) con
             polyLPtr->push_back(pMap[*it]);                                                         \
         }                                                                                           \
     }                                                                                               \
+    InventorHelper::watch("\n");                                                                    \
                                                                                                     \
     if ( polyLPtr->empty() )                                                                        \
         /* delete empty polygon */                                                                  \

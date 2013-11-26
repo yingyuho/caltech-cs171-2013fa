@@ -47,7 +47,7 @@ public:
 
     virtual std::string incomplete_param_msg() const {
         if (incomplete_param())
-            return "No PerspectiveCamera";
+            return "InventorParam: No PerspectiveCamera";
         else
             return "";
     }
@@ -109,7 +109,7 @@ public:
 
     virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
-        std::string s = "No ";
+        std::string s = "SeparatorParam: No ";
         if (!mPtr) s += "Material ";
         if (!cPtr) s += "Coordinate3 ";
         if (!nPtr) s += "Normal ";
@@ -153,7 +153,7 @@ public:
 
     virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
-        std::string s = "No ";
+        std::string s = "PCameraParam: No ";
         if (!pos) s += "position ";
         if (!orient) s += "orientation ";
         if (!n) s += "nearDistance ";
@@ -289,7 +289,7 @@ public:
 
     virtual std::string incomplete_param_msg() const {
         if (!incomplete_param()) return "";
-        std::string s = "No ";
+        std::string s = "IFSParam: No ";
         if (!coordIndex) s += "coordIndex ";
         if (!normalIndex) s += "normalIndex ";
         return s;

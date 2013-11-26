@@ -13,8 +13,9 @@ CC = g++
 LD = g++
 IN = include
 PC = parser_code
-CFLAGS = -O2 -Wno-tautological-compare -I./$(IN)
-LDFLAGS = 
+CFLAGS = -O2 -I./$(IN) -std=c++11
+#-Wno-tautological-compare
+LDFLAGS = -std=c++11
 
 all: obj tmp $(PC) $(PRG)
 

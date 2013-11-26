@@ -58,7 +58,8 @@ private:
     T array[R*C];
 
     void copy_array(T *target, const T *source) {
-    	std::copy_n(source, R*C, target);
+        for ( int i = 0; i < R*C; i++ )
+            target[i] = source[i];
     }
 
     // fill the main diagonal with given scalar

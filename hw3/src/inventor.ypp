@@ -141,11 +141,18 @@ static Inventor *result = 0;
 inventor:
     blocks
     {
+        if (!$1) {
+            yyerror("inventor: Null InventorParam pointer");
+            return 1;
+        }
+
         if ( $1->incomplete_param() ) {
-            yyerror($1->incomplete_param_msg());
+            yyerror("inventor: " + $1->incomplete_param_msg());
+            delete $1;
+            return 1;
         } else {
-            InventorHelper::watch("Made Inventor\n");
             result = $1->make_object();
+            InventorHelper::watch("Made Inventor\n");
             delete $1;
         }
     }
@@ -158,21 +165,41 @@ blocks:
     blocks camerablock
     {
         $$ = $1;
-        if ($$->pCamPtr)
-            yyerror("More than one PerspectiveCamera");
-        else
+
+        if (!$2) {
+            yyerror("blocks: Null PerspectiveCamera pointer");
+            return 1;
+        }
+
+        if ($$->pCamPtr) {
+            yyerror("blocks: More than one PerspectiveCamera");
+            delete $2;
+        } else {
             $$->pCamPtr = $2;
+        }
     }
     | 
     blocks plightblock
     {
         $$ = $1;
+
+        if (!$2) {
+            yyerror("blocks: Null PointLight pointer");
+            return 1;
+        }
+
         $$->plList.push_back($2);
     }
     | 
     blocks sepblock
     {
         $$ = $1;
+
+        if (!$2) {
+            yyerror("blocks: Null Separator pointer");
+            return 1;
+        }
+
         $$->sepList.push_back($2);
     }
 ;
@@ -180,8 +207,12 @@ blocks:
 camerablock:
     PCAMERA open cameralines close
     {
+        $$ = 0;
+
         if ( $3->incomplete_param() ) {
             yyerror($3->incomplete_param_msg());
+            delete $3;
+            return 1;
         } else {
             InventorHelper::watch("Made PerspectiveCamera\n");
             $$ = $3->make_object();
@@ -201,25 +232,31 @@ cameralines:
     cameralines POS triple
     {
         $$ = $1;
-        if ($$->pos)
+
+        if ($$->pos) {
             yyerror("More than one position");
-        else
+            delete $3;
+        } else {
             $$->pos = $3;
+        }
     }
     |
     cameralines ORIENT quad
     {
         $$ = $1;
-        if ($$->orient)
+
+        if ($$->orient) {
             yyerror("More than one orientation");
-        else
+            delete $3;
+        } else {
             $$->orient = $3;
+        }
     }
     |
     cameralines NDIST floatnum
     {
         $$ = $1;
-        if ($$->n)
+        if ($$->n) 
             yyerror("More than one nearDistance");
         else
             $$->n = new double($3);
@@ -274,13 +311,22 @@ cameralines:
 plightblock:
     PTLIGHT open plightlines close
     {
-        if ( $3->incomplete_param() ) {
-            yyerror($3->incomplete_param_msg());
-        } else {
-            InventorHelper::watch("Made PointLight\n");
-            $$ = $3->make_object();
-            delete $3;
+        $$ = 0;
+
+        if (!$3) {
+            yyerror("plightblock: Null PLightParam pointer");
+            return 1;
         }
+
+        if ( $3->incomplete_param() ) {
+            yyerror("plightblock: " + $3->incomplete_param_msg());
+            delete $3;
+            return 1;
+        } else {
+            $$ = $3->make_object();
+            InventorHelper::watch("Made PointLight\n");
+        }
+        delete $3;
     }
 ;
 // plightlines ::= plightline [plightlines]
@@ -293,27 +339,57 @@ plightlines:
     plightlines LOCATION triple
     {
         $$ = $1;
-        if ($$->location)
-            yyerror("More than one location");
-        else
+
+        if (!$3) {
+            yyerror("plightlines: Null Vec4 pointer");
+            return 1;
+        }
+
+        if ($$->location) {
+            yyerror("plightlines: More than one location");
+            delete $3;
+        } else {
             $$->location = $3;
+        }
     }
     |
     plightlines COLOR triple
     {
         $$ = $1;
-        if ($$->color)
-            yyerror("More than one color");
-        else
+
+        if (!$3) {
+            yyerror("plightlines: Null Vec4 pointer");
+            return 1;
+        }
+
+        if ($$->color) {
+            yyerror("plightlines: More than one color");
+            delete $3;
+        } else {
             $$->color = $3;
+        }
     }
 ;
 // sepblock    ::= SEPARATOR open sepitems close
 sepblock:
     SEPARATOR open sepitems close
     {
-        $$ = $3->make_object();
-        delete $3;
+        $$ = 0;
+
+        if (!$3) {
+            yyerror("sepitems: Null SeparatorParam pointer");
+            return 1;
+        }
+
+        if ( $3->incomplete_param() ) {
+            yyerror("sepblock: " + $3->incomplete_param_msg());
+            delete $3;
+            return 1;
+        } else {
+            $$ = $3->make_object();
+            delete $3;
+            InventorHelper::watch("Made Separator\n");
+        }
     }
 ;
 // sepitems    ::= sepitem [sepitems]
@@ -330,46 +406,106 @@ sepitems:
     sepitems TRANSFORM open translines close
     {
         $$ = $1;
-        $$->tPtr->push_right($4->make_object());
-        delete $4;
+
+        if (!$4) {
+            yyerror("sepitems: Null TransformParam pointer");
+            return 1;
+        }
+
+        if ( $4->incomplete_param() ) {
+            yyerror("sepitems: " + $4->incomplete_param_msg());
+            delete $4;
+            return 1;
+        } else {
+            $$->tPtr->push_right($4->make_object());
+            delete $4;
+            InventorHelper::watch("Made Transform\n");
+        }
     }
     |
     sepitems MATERIAL open matlines close
     {
         $$ = $1;
-        if ($$->mPtr)
-            yyerror("More than one Material");
-        else 
-            $$->mPtr = $4->make_object();
-        delete $4;
+
+        if (!$4) {
+            yyerror("sepitems: Null MaterialParam pointer");
+            return 1;
+        }
+
+        if ($$->mPtr) {
+            yyerror("sepitems: More than one Material");
+            delete $4;
+        } else {
+            if ( $4->incomplete_param() ) {
+                yyerror("sepitems: " + $4->incomplete_param_msg());
+                delete $4;
+                return 1;
+            } else {
+                $$->mPtr = $4->make_object();
+                delete $4;
+                InventorHelper::watch("Made Material\n");
+            }
+        }
     }
     | 
     sepitems COORD3 open POINT sqopen triplesC sqclose close
     {
         $$ = $1;
-        if ($$->cPtr)
-            yyerror("More than one Coordinate3");
-        else
+
+        if (!$6) {
+            yyerror("sepitems: Null Coordinate3 pointer");
+            return 1;
+        }
+
+        if ($$->cPtr) {
+            yyerror("sepitems: More than one Coordinate3");
+            delete $6;
+        } else {
             $$->cPtr = $6;
+            InventorHelper::watch("Made Coordinate3\n");
+        }
     }
     | 
     sepitems NORMAL open VECTOR sqopen triplesN sqclose close
     {
         $$ = $1;
-        if ($$->nPtr)
-            yyerror("More than one Normal");
-        else
+
+        if (!$6) {
+            yyerror("sepitems: Null Normal3 pointer");
+            return 1;
+        }
+
+        if ($$->nPtr) {
+            yyerror("sepitems: More than one Normal");
+            delete $6;
+        } else {
             $$->nPtr = $6;
+            InventorHelper::watch("Made Normal3\n");
+        }
     }
     | 
     sepitems IFACESET open ifslines close
     {
         $$ = $1;
-        if ($$->iPtr)
-            yyerror("More than one IndexedFaceSet");
-        else
-            $$->iPtr = $4->make_object();
-        delete $4;
+
+        if (!$4) {
+            yyerror("sepitems: Null IFSParam pointer");
+            return 1;
+        }
+
+        if ($$->iPtr) {
+            yyerror("sepitems: More than one IndexedFaceSet");
+            delete $4;
+        } else {
+            if ( $4->incomplete_param() ) {
+                yyerror("sepitems: " + $4->incomplete_param_msg());
+                delete $4;
+                return 1;
+            } else {
+                $$->iPtr = $4->make_object();
+                delete $4;
+            }
+        }
     }
 ;
 // translines  ::= transline [translines]
@@ -384,8 +520,15 @@ translines:
     translines TRANSLAT triple
     {
         $$ = $1;
+
+        if (!$3) {
+            yyerror("translines: Null Vec3 pointer");
+            return 1;
+        }
+
         if ($$->t) {
-            yyerror("More than one translation");
+            yyerror("translines: More than one translation");
+            delete $3;
         } else {
             $$->t = new Translation(*($3));
             delete $3;
@@ -395,8 +538,15 @@ translines:
     translines SFACTOR triple
     {
         $$ = $1;
+
+        if (!$3) {
+            yyerror("translines: Null Vec3 pointer");
+            return 1;
+        }
+
         if ($$->s) {
-            yyerror("More than one scaleFactor");
+            yyerror("translines: More than one scaleFactor");
+            delete $3;
         } else {
             $$->s = new ScaleFactor(*($3));
             delete $3;
@@ -406,8 +556,15 @@ translines:
     translines ROT quad
     {
         $$ = $1;
+
+        if (!$3) {
+            yyerror("translines: Null Vec4 pointer");
+            return 1;
+        }
+
         if ($$->r) {
-            yyerror("More than one rotation");
+            yyerror("translines: More than one rotation");
+            delete $3;
         } else {
             $$->r = new Rotation(*($3));
             delete $3;
@@ -425,37 +582,63 @@ matlines:
     matlines ACOLOR triple
     {
         $$ = $1;
-        if ($$->aColor)
-            yyerror("More than one ambientColor");
-        else
+
+        if (!$3) {
+            yyerror("matlines: Null Vec3 pointer");
+            return 1;
+        }
+
+        if ($$->aColor) {
+            yyerror("matlines: More than one ambientColor");
+            delete $3;
+        } else {
             $$->aColor = $3;
+        }
     }
     |
     matlines DCOLOR triple
     {
         $$ = $1;
-        if ($$->dColor)
-            yyerror("More than one diffuseColor");
-        else
+
+        if (!$3) {
+            yyerror("matlines: Null Vec3 pointer");
+            return 1;
+        }
+
+        if ($$->dColor) {
+            yyerror("matlines: More than one diffuseColor");
+            delete $3;
+        } else {
             $$->dColor = $3;
+        }
     }
     |
     matlines SCOLOR triple
     {
         $$ = $1;
-        if ($$->sColor)
-            yyerror("More than one specularColor");
-        else
+
+        if (!$3) {
+            yyerror("matlines: Null Vec3 pointer");
+            return 1;
+        }
+
+        if ($$->sColor) {
+            yyerror("matlines: More than one specularColor");
+            delete $3;
+        } else {
             $$->sColor = $3;
+        }
     }
     |
     matlines SHININESS floatnum
     {
         $$ = $1;
-        if ($$->shininess)
-            yyerror("More than one shininess");
-        else
+
+        if ($$->shininess) {
+            yyerror("matlines: More than one shininess");
+        } else {
             $$->shininess = new double($3);
+        }
     }
 ;
 // ifslines    ::= ifsline [ifslines]
@@ -469,19 +652,35 @@ ifslines:
     ifslines COORDINDEX sqopen singles sqclose
     {
         $$ = $1;
-        if ($$->coordIndex)
-            yyerror("More than one coordIndex");
-        else
+
+        if (!$4) {
+            yyerror("ifslines: Null std::vector<int> pointer");
+            return 1;
+        }
+
+        if ($$->coordIndex) {
+            yyerror("ifslines: More than one coordIndex");
+            delete $4;
+        } else {
             $$->coordIndex = $4;
+        }
     }
     |
     ifslines NORMINDEX sqopen singles sqclose
     {
         $$ = $1;
-        if ($$->normalIndex)
-            yyerror("More than one normalIndex");
-        else
+
+        if (!$4) {
+            yyerror("ifslines: Null std::vector<int> pointer");
+            return 1;
+        }
+
+        if ($$->normalIndex) {
+            yyerror("ifslines: More than one normalIndex");
+            delete $4;
+        } else {
             $$->normalIndex = $4;
+        }
     }
 ;
 // singles     ::= single [COMMA single]
@@ -503,6 +702,12 @@ triplesC:
     triple
     {
         $$ = new Coordinate3();
+
+        if (!$1) {
+            yyerror("triplesC: Null Vec3 pointer");
+            return 1;
+        }
+
         $$->feed_param(*$1);
         delete $1;
     }
@@ -510,6 +715,12 @@ triplesC:
     triplesC COMMA triple
     {
         $$ = $1;
+
+        if (!$3) {
+            yyerror("triplesC: Null Vec3 pointer");
+            return 1;
+        }
+
         $$->feed_param(*$3);
         delete $3;
     }
@@ -518,6 +729,12 @@ triplesN:
     triple
     {
         $$ = new Normal3();
+
+        if (!$1) {
+            yyerror("triplesN: Null Vec3 pointer");
+            return 1;
+        }
+
         $$->feed_param(*$1);
         delete $1;
     }
@@ -525,6 +742,12 @@ triplesN:
     triplesN COMMA triple
     {
         $$ = $1;
+
+        if (!$3) {
+            yyerror("triplesN: Null Vec3 pointer");
+            return 1;
+        }
+
         $$->feed_param(*$3);
         delete $3;
     }
@@ -575,13 +798,13 @@ Inventor *parse_inventor(istream &datafile)
 {
    // Construct the lexer.
    lexer = new yyFlexLexer(&datafile);
+
    // Run the parser.
    if(yyparse())
    {
        cerr << "Parse failed!" << endl;
        exit(1);
    }
-
    delete lexer;
    return result;
 }

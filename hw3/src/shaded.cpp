@@ -93,10 +93,8 @@ int main(int argc, char* argv[])
         ERROR_MSG()
         return 1;
     }
-
     // parse inventer commands from stdin
     Inventor * inv = parse_inventor(cin);
-
     // make sure the parser doesn't return a null pointer
     if ( !inv ) { cerr << "Inventor object is not made." << endl; return 1; }
 
