@@ -1,0 +1,84 @@
+===========
+Description
+===========
+
+This is a 3-D shaded renderer that reads input in OpenInventor 
+format from stdin and display the model with OpenGL.
+
+===========
+Compilation
+===========
+
+"make" gives the program "oglRenderer"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------------
+Command Line
+------------
+
+./oglRenderer (xRes) (yRes) [-eyelight[=(strength)]] < (input-data)
+
+For example:
+
+./oglRenderer 500 500 -eyelight=0.5 < models/cube3.iv
+
+Parameters are surrounded by ( ) and things inside [ ] are optional.
+
+----------
+Parameters
+----------
+
+xRes            The width of the window. Must be a positive integer.
+
+yRes            The height of the window. Must be a positive integer.
+
+-eyelight       Add a dim white light near the camera. Default strength is 0.2.
+
+strength        The absolute intensity of the eye light. Must be a real number.
+
+input-data      Input file in Open Inventor format.
+
+==============
+User Interface
+==============
+
+----------------
+Mouse Operations
+----------------
+
+Click & Drag            Translate in the same direction of movement
+
+Shift + Click & Drag    Zoom in with upward movement and vice versa
+
+Ctrl  + Click & Drag    Rotate w.r.t. the axis orthogonal to direction of movement
+
+Right Click             Show the menu with available key operations
+
+--------------
+Key Operations
+--------------
+
+Esc/Q   Quit the program
+
+W       Display wireframe
+
+F       Display flat shading
+
+G       Display Gouraud shading
+
+R       Restore the initial view
+
+===============
+Acknowledgement
+===============
+
+I adopt classes Complex, Vector, and Quaternion from the framework provided by
+"CS177: Discrete Differential Geometry" to help me process user-generated rotation.
+
+The design of class Viewer is also inspired from the same framework.
+

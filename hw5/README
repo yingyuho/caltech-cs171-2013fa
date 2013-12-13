@@ -1,0 +1,66 @@
+===========
+Description
+===========
+
+This is a cubic B-spline editor with extra features panning, zooming, 
+
+adaptive parameterization, anti-aliasing, and control poly-line toggling.
+
+===========
+Compilation
+===========
+
+"make" gives the program "editSpline"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------------
+Command Line
+------------
+
+./editSpline (xRes) (yRes)
+
+For example:
+
+./editSpline 500 500
+
+----------
+Parameters
+----------
+
+xRes            The width of the window. Must be a positive integer.
+
+yRes            The height of the window. Must be a positive integer.
+
+==============
+User Interface
+==============
+
+----------------
+Mouse Operations
+----------------
+
+Left-click & Drag            Move a control point
+
+Right-click                  Insert a knot
+
+Shift + Left-click & Drag    Pan the camera
+
+--------------
+Key Operations
+--------------
+
+Esc/Q   Quit the program
+
+C       Toggle display and editing of the control poly-line
+
+I       Zoom in w.r.t center of image
+
+O       Zoom out w.r.t center of image
+
+R       Restore the initial view
+
