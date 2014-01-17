@@ -1,0 +1,117 @@
+%{
+#include <cstdlib>
+#include <cmath>
+#include <FlexLexer.h>
+#include "KeyframeSeries.h"
+using namespace std;
+
+int yyerror(const char *s);
+int yylex();
+
+const double DEGTORAD = 3.141592653589793238462 / 180.;
+
+static KeyframeSeries *result = 0;
+%}
+
+
+%union
+{
+    char* cstrVal;
+    double fVal;
+    int iVal;
+
+    Keyframe *kfPtr;
+    KeyframeSeries *kfsPtr;
+}
+
+%defines
+%type   <kfsPtr>    series
+%type   <kfPtr>     keyframe
+%token  FRAME
+%token  TRANSLATION
+%token  ROTATION
+%token  SCALE
+%token  <cstrVal>   NUMBER
+%type   <iVal>      intNum
+%type   <fVal>      floatNum
+%token  ERROR
+
+
+%%
+
+series:
+    intNum
+    {
+        result = $$ = new KeyframeSeries();
+        $$->length = $1;
+    }
+    |
+    series keyframe
+    {
+        $$ = $1;
+        $$->keyframes.push_back(*$2);
+        delete $2;
+    }
+;
+
+keyframe:
+    FRAME intNum
+    {
+        $$ = new Keyframe();
+        $$->index = $2;
+    }
+    |
+    keyframe TRANSLATION floatNum floatNum floatNum
+    {
+        $$ = $1;
+        $$->data.translation = Vector( $3, $4, $5 );
+    }
+    |
+    keyframe ROTATION floatNum floatNum floatNum floatNum
+    {
+        Vector v( $3, $4, $5 );
+        v.normalize();
+        $$->data.rotation = Quaternion( cos($6/2.*DEGTORAD), v * sin($6/2.*DEGTORAD) );
+    }
+    |
+    keyframe SCALE floatNum floatNum floatNum
+    {
+        $$ = $1;
+        $$->data.scale = Vector( $3, $4, $5 );
+    }
+;
+
+floatNum: NUMBER { $$ = atof($1); };
+
+intNum: NUMBER { $$ = atoi($1); };
+
+%%
+
+static FlexLexer *lexer;
+
+int yyerror(const char * s)
+{
+   cerr << "Parse error: " << s << endl;
+   return 0;
+}
+
+int yylex()
+{
+   return lexer->yylex();
+}
+
+KeyframeSeries * parse_keyframe(istream &datafile)
+{
+   // Construct the lexer.
+   lexer = new yyFlexLexer(&datafile);
+
+   // Run the parser.
+   if(yyparse())
+   {
+       cerr << "Parse failed!" << endl;
+       exit(1);
+   }
+   delete lexer;
+   return result;
+}
+

@@ -1,0 +1,72 @@
+===========
+Description
+===========
+
+This is a 3-D texture renderer that reads input in OpenInventor 
+format from stdin and display the model with OpenGL.
+A surface with animated water is added.
+
+===========
+Compilation
+===========
+
+"make" gives the program "oglRenderer"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------------
+Command Line
+------------
+
+./oglRenderer (xRes) (yRes) (input-data)
+
+For example:
+
+./oglRenderer 500 500 data/geo.iv
+
+Note that data/geo.iv is taken as an argument instead of a stream
+
+----------
+Parameters
+----------
+
+xRes            The width of the window. Must be a positive integer.
+
+yRes            The height of the window. Must be a positive integer.
+
+input-data      Input file in Open Inventor format.
+
+==============
+User Interface
+==============
+
+----------------
+Mouse Operations
+----------------
+
+Click & Drag            Translate in the same direction of movement
+
+Shift + Click & Drag    Zoom in with upward movement and vice versa
+
+Ctrl  + Click & Drag    Rotate w.r.t. the axis orthogonal to direction of movement
+
+Right Click             Show the menu with available key operations
+
+--------------
+Key Operations
+--------------
+
+Esc/Q   Quit the program
+
+W       Toggle wireframe / 3-D model with texture
+
+A       Toggle animated water
+
+R       Restore the initial view
+
+
+

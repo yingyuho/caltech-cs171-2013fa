@@ -1,0 +1,77 @@
+===========
+Description
+===========
+
+This program generates an animation given a script containing keyframes.
+
+Each keyframe contains a set of transformations which will be applied on an I-bar.
+
+===========
+Compilation
+===========
+
+"make" gives the program "keyframe"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------------
+Command Line
+------------
+
+./keyframe script
+
+For example:
+
+./keyframe data/sample.script
+
+----------
+Parameters
+----------
+
+script          Script file containing keyframes
+
+==============
+User Interface
+==============
+
+--------------
+Key Operations
+--------------
+
+The key pressed and the functino exeuted will be visible in the terminal window.
+
+
+Esc/Q   Quit the program
+
+Space   Play/Stop
+
+F       Forward one frame
+
+R       Reverse one frame
+
+L       Toggle Loop mode on/off
+
+J       Jump to frame. Use number keys to enter the frame number.
+        If no number is given, jump to frame 0.
+
+        Examples (case-insensitive):
+
+        type "15J" to jump to frame 15
+
+        type "J" to jump to frame 0
+
+0-9     Enter the frame number to jump to
+
+Up      Move the camera toward the origin
+
+Down    Move the camera away from the origin
+
+Left    Rotate the camera to the left around the origin
+        (always looking at the origin).
+
+Right   Rotate the camera to the right around the origin
+        (always looking at the origin).
