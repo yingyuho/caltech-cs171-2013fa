@@ -30,6 +30,11 @@ static GLenum skyTex, leafTex;
 static GLint leafUniformPos, skyUniformPos;
 static GLint tUniformPos;
 static GLuint displayList;
+static GLboolean perFrag = false;
+static GLint perFragUniformPos;
+
+static GLfloat waveK = 5.0, waveW = 3.0, waveA = 0.2;
+static GLint waveKUniformPos, waveWUniformPos, waveAUniformPos;
 
 static double clip(double x, double a, double b) {
    double y = (x>a)?x:a;
@@ -85,9 +90,22 @@ static void readShaders() {
    glShaderSource(vertShader, 1, &vertShaderSource, NULL);
    glCompileShader(vertShader);
 
+   GLint status;
+
+   glGetShaderInfoLog(vertShader, 1024, &blah, buf);
+   glGetShaderiv(vertShader, GL_COMPILE_STATUS, &status);
+   cerr << status << endl;
+   cerr << buf;
+
    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
    glCompileShader(fragShader);
+
+   glGetShaderInfoLog(fragShader, 1024, &blah, buf);
+   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &status);
+   cerr << status << endl;
+   cerr << buf;
+
 
    glAttachShader(shaderProgram, vertShader);
    glAttachShader(shaderProgram, fragShader);
@@ -102,6 +120,16 @@ static void readShaders() {
    leafUniformPos = glGetUniformLocation(shaderProgram, "leaf");
    skyUniformPos = glGetUniformLocation(shaderProgram, "sky");
    tUniformPos = glGetUniformLocation(shaderProgram, "t");
+   perFragUniformPos = glGetUniformLocation(shaderProgram, "perFrag");
+
+   waveKUniformPos = glGetUniformLocation(shaderProgram, "k");
+   waveWUniformPos = glGetUniformLocation(shaderProgram, "w");
+   waveAUniformPos = glGetUniformLocation(shaderProgram, "A");
+   glUniform1f(waveKUniformPos, waveK);
+   glUniform1f(waveWUniformPos, waveW);
+   glUniform1f(waveAUniformPos, waveA);
+
+   glUniform1i(perFragUniformPos, perFrag);
 
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, skyTex);
@@ -203,10 +231,45 @@ static void motion(int x, int y) {
    glutPostRedisplay();
 }
 
+static void keyfunc(GLubyte key, GLint x, GLint y)
+{
+    switch (key)
+    {
+    case 27:
+    case 'Q': case 'q':
+        exit(0);
+        break;
+    case 'F': case 'f':
+        perFrag = true;
+        glUseProgram(shaderProgram);
+        glUniform1i(perFragUniformPos, perFrag);
+        break;
+    case 'V': case 'v':
+        perFrag = false;
+        glUseProgram(shaderProgram);
+        glUniform1i(perFragUniformPos, perFrag);
+        break;
+    default:
+        break;
+    }
+}
+
 int main(int argc, char *argv[]) {
    glutInit(&argc, argv);
    // glutInitWindowPosition(., .);
-   glutInitWindowSize(600, 600);
+   int w = 600, h = 600;
+   if ( argc >= 2 ) {
+      w = atoi(argv[1]);
+      if (w <= 0)
+         w = 600;
+      h = w;
+   }
+   if ( argc >= 3 ) {
+      h = atoi(argv[2]);
+      if (h <= 0)
+         h = w;
+   }
+   glutInitWindowSize(w, h);
    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
    glutCreateWindow("GLSL test");
 
@@ -226,6 +289,7 @@ int main(int argc, char *argv[]) {
    glutIdleFunc(doList);
    glutMouseFunc(mouseButton);
    glutMotionFunc(motion);
+   glutKeyboardFunc(keyfunc);
    glutMainLoop();
    return 0;
 }

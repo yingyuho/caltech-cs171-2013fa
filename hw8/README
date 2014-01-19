@@ -1,0 +1,46 @@
+===========
+Description
+===========
+
+This program uses OpenGL Shading Language to produce a water surface with floating leaves.
+
+===========
+Compilation
+===========
+
+"make" gives the program "glslRenderer"
+
+"make clean" removes the intermediate files generated during compilation.
+
+=====
+Usage
+=====
+
+------------
+Command Line
+------------
+
+./glslRenderer [w = 600] [h = w]
+
+----------
+Parameters
+----------
+
+w 		Window width. Default 600.
+
+h		Window height. Default w.
+
+==============
+User Interface
+==============
+
+--------------
+Key Operations
+--------------
+
+Esc/Q   Quit the program
+
+V   	Use per-vertex render mode
+
+F       Use per-fragment render mode
+
